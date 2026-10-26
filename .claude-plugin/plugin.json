@@ -1,0 +1,11 @@
+{
+  "name": "auditoria-pre-subida",
+  "version": "1.0.0",
+  "description": "Auditoria obrigatória antes de subir (pt-BR): o diff da branch é auditado em arquitetura (guia do projeto), segurança, boas práticas da stack e ponytail (correto, testado, enxuto), com critérios embutidos e contraprova adversarial; um hook bloqueia PR, merge e push na base sem veredito aprovado do commit. Qualquer projeto (Laravel, Python, JS/TS), só Claude Code.",
+  "author": {
+    "name": "Victor Stochero",
+    "url": "https://github.com/VictorStochero"
+  },
+  "license": "MIT",
+  "keywords": ["auditoria", "review", "seguranca", "arquitetura", "pre-push", "pt-br"]
+}
