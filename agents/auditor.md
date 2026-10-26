@@ -18,11 +18,12 @@ O caminho do pacote vem no pedido (`<dir>/pacote.md`): base, merge-base, HEAD, c
 1. **Critérios do plugin** (pasta indicada no pacote), todos obrigatórios:
    - `arquitetura.md` — A0 (o guia do projeto manda) e os padrões recorrentes A1–A18;
    - `seguranca.md` — S1–S12;
-   - `boas-praticas-<stack>.md` da stack do diff (`laravel`, `python`, `js`; mais de uma se o diff tocar mais de uma);
-   - `ponytail.md` — P1–P6.
+   - `boas-praticas-<stack>.md` da stack do diff (`laravel`, `python`, `js`; mais de uma se o diff tocar mais de uma). Laravel: **também a íntegra** em `laravel-best-practices/` — `indice.md` e todas as `rules/*.md`;
+   - `ponytail.md` — P1–P6, **e a íntegra** em `ponytail/` (`ponytail.md` e `ponytail-review.md`).
+   Não pule a íntegra por já ter lido o mapa: o detalhe (exemplos, exceções, o porquê) está nela.
 2. **Guia de arquitetura do projeto** indicado no pacote: índice e páginas dos assuntos do diff. Checklist do guia vira tabela item a item. O guia vence o código vizinho e os critérios genéricos.
 3. `CLAUDE.md`/`AGENTS.md` do projeto e as skills do projeto que tocarem o diff (`.claude/skills`, `.ai/skills`).
-4. Skills de boas práticas da stack que existirem no ambiente (ex.: `laravel-best-practices`, `filament-security-audit`, `pest-testing`): invoque e use para aprofundar os itens do critério da stack. Para API ou versão, a documentação oficial da versão do lockfile, não memória.
+4. Skills de boas práticas da stack que existirem no projeto ou no ambiente (ex.: `laravel-best-practices`, `pest-testing`; com Filament, `filament-security-audit` e as `references/` do `filament-planning`): invoque ou leia e use para aprofundar os itens do critério da stack. Para API ou versão, a documentação oficial da versão do lockfile, não memória.
 
 ## Como auditar
 Para cada arquivo do diff, passe pelas quatro dimensões e pelos itens que se aplicam. Siga o código além do diff — chamadores, rota, Policy/permissão, componente que monta a tela, testes — para provar o efeito; não basta "parece". Grep antes de afirmar duplicação, código morto ou ausência de guarda. Em segurança, descreva o caminho de exploração (quem, por qual chamada, com que entrada, o que obtém).
@@ -63,7 +64,7 @@ Resumo: <2 frases: quantos achados na branch por prioridade, e o mais grave>
 ## A<k> — <título curto>
 - Escopo: na branch | pré-existente
 - Dimensão: arquitetura | segurança | boas práticas | ponytail
-- Critério: <guia § seção | seguranca § S<n> | boas-praticas-<stack> § <id> | ponytail § P<n> | arquitetura § A<n>> — <o que ele diz, em uma linha>
+- Critério: <guia § seção | seguranca § S<n> | boas-praticas-<stack> § <id> | laravel-best-practices/rules/<arquivo> § <seção> | ponytail § P<n> | arquitetura § A<n>> — <o que ele diz, em uma linha>
 - Onde: <arquivo:linha no HEAD> — <o que o código faz, 1-3 frases>
 - Evidência: <trecho curto ou caminho de chamada; em segurança, o caminho de exploração; em ponytail, o caso concreto que dá errado ou as linhas que sobram>
 - Prioridade: P0 | P1 | P2 | P3 — <motivo em 1 frase>

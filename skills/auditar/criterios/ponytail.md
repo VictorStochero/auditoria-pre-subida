@@ -1,6 +1,8 @@
 # Critérios — Ponytail (correto, seguro, aguenta carga, testado, rápido, enxuto)
 
-Adaptado do `ponytail-review` ([DietrichGebert/ponytail](https://github.com/DietrichGebert/ponytail), MIT). Ordem de importância: **correto, seguro, aguenta a carga, testado, rápido, enxuto**. Enxuto importa: cada linha a mais é lida, testada e corrigida depois.
+**Íntegra em `ponytail/`** (ao lado deste arquivo): `ponytail.md` (as regras de "a menor mudança completa": precisa existir?, já existe no repositório?, biblioteca padrão, dependência instalada, uma linha, o mínimo; o que nunca cortar) e `ponytail-review.md` (o método de revisão), do [DietrichGebert/ponytail](https://github.com/DietrichGebert/ponytail) v5.2.0 (MIT, `ponytail/LICENSE`), sem alteração. Leia os dois inteiros: o review é o método, o `ponytail.md` é a régua do que "devia ser menor". Ignore o que é do modo interativo (níveis, comandos, formato de resposta ao usuário): a saída segue o formato do auditor.
+
+Esta página é o mapa em pt-BR para citar nos achados (`ponytail § P1`–`P6`). Ordem de importância: **correto, seguro, aguenta a carga, testado, rápido, enxuto**. Enxuto importa: cada linha a mais é lida, testada e corrigida depois.
 
 Antes de apontar: leia o diff **e** o código ligado a ele (chamadores de toda função alterada, o que ela chama, os testes). Mudança de assinatura, retorno ou comportamento: Grep em todos os chamadores. Ache no repositório a carga esperada (README, deploy, filas) e julgue escala contra ela.
 

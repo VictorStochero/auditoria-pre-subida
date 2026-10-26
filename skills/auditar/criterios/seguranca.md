@@ -1,6 +1,6 @@
 # Critérios — Segurança
 
-Vale para toda stack. Cada achado cita o item (`seguranca § S3`) e traz o **caminho concreto de exploração**: quem (perfil real, nunca administrador), por qual chamada (rota, método público, endpoint, evento), com que entrada, e o que obtém. Sem caminho que feche, não é P0. Os sinais por stack são onde procurar, não a lista inteira.
+Vale para toda stack. Projeto com Filament e a skill `filament-security-audit` instalada (`.ai/skills/` ou `.claude/skills/`): leia-a inteira e aplique ao diff, somada a estes itens. Cada achado cita o item (`seguranca § S3`) e traz o **caminho concreto de exploração**: quem (perfil real, nunca administrador), por qual chamada (rota, método público, endpoint, evento), com que entrada, e o que obtém. Sem caminho que feche, não é P0. Os sinais por stack são onde procurar, não a lista inteira.
 
 ## S1 — Autorização no servidor em toda entrada que grava ou lê dado restrito
 Toda rota, controller, endpoint de API, método público de componente, ação de formulário/tabela e job disparado pelo usuário pergunta à regra de permissão do projeto (Policy, Gate, permission class, middleware) **no servidor**. Esconder botão, desabilitar campo ou filtrar menu não protege.

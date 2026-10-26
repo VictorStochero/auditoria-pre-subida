@@ -1,6 +1,8 @@
 # Critérios — Boas práticas Laravel (PHP, Eloquent, Livewire, Filament, Pest)
 
-Resumo do `laravel-best-practices` do Laravel Boost (MIT, laravel) com o que mais voltou em revisão. Se a skill `laravel-best-practices` estiver instalada no projeto, invoque e leia as `rules/` dos assuntos do diff; ela detalha estes itens. **Consistência primeiro**: o que o projeto já faz (e o guia de arquitetura dele) vence estes padrões; só aponte quando o diff cria um segundo jeito ou não há padrão.
+**Íntegra em `laravel-best-practices/`** (ao lado deste arquivo): `indice.md` e as 19 `rules/*.md` do `laravel-best-practices` do Laravel Boost v2.4.10 (MIT © Taylor Otwell, `laravel-best-practices/LICENSE.md`), sem alteração. Diff com PHP: leia o `indice.md` e **todas** as `rules/`; cada regra traz o porquê e o exemplo certo/errado. Se o projeto tiver a skill `laravel-best-practices` numa versão mais nova, ela prevalece.
+
+Esta página é o mapa em pt-BR para citar nos achados (`boas-praticas-laravel § L4`, ou direto `laravel-best-practices/rules/security.md`), com o que mais volta em revisão. **Consistência primeiro**: o que o projeto já faz (e o guia de arquitetura dele) vence estes padrões; só aponte quando o diff cria um segundo jeito ou não há padrão.
 
 ## L1 — Banco e consultas
 Eager loading (`with`) contra N+1, `withCount` para contar, só as colunas necessárias, `chunkById`/`lazyById`/`cursor` para lote grande, índice para coluna nova em `WHERE`/`ORDER BY`/`JOIN`, nenhuma query em Blade, `whereIn`+`pluck` em vez de `whereHas` pesado, nome de tabela pelo Model (`(new X)->getTable()`), nunca string solta em SQL cru.
@@ -27,6 +29,7 @@ Job com `failed()`, `retry_after` maior que `timeout`, backoff, `ShouldBeUnique`
 `env()` só em `config/`; `app()->isProduction()`; texto em lang/config; exceção com `report()`/`render()` no padrão do projeto; sem `catch` vazio.
 
 ## L9 — Livewire e Filament
+Diff com Filament: se o projeto tiver as skills `filament-security-audit` e `filament-planning` (em `.ai/skills/` ou `.claude/skills/`), leia-as inteiras — a de segurança entra na dimensão Segurança; as `references/` do planning são a régua do componente certo, do namespace e da URL de docs da versão do projeto (o `SKILL.md` do planning é fluxo de escrever plano, não se aplica). Sem elas, a documentação oficial da versão do Filament do lockfile.
 Livewire: todo método público é entrada (ver `seguranca § S1`); `#[Locked]` em id/estado que o servidor decide; propriedade pública não carrega model inteiro sem necessidade; `wire:model.live` só onde precisa. Filament v4: `->authorize()`/Policy do Resource em ação e página; página custom com `canAccess()`; componente nativo do Filament em vez de HTML à mão; namespaces da v4 (`Filament\Schemas`, `Filament\Actions`).
 
 ## L10 — Blade e front
