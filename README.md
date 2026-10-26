@@ -38,7 +38,7 @@ O fluxo:
 2. **Auditor** (Opus, só leitura): confere o diff em quatro dimensões, cada uma com critérios numerados que vêm no plugin (`skills/auditar/criterios/`) e não dependem de outra instalação:
    - **Arquitetura** (`arquitetura.md`): o guia do projeto manda (`wiki/`, `docs/` ou `doc/` + `arquitetura`/`architecture`, com o checklist dele item a item); sem guia, valem 18 padrões recorrentes (teste de autorização com administrador, regra duplicada, migration com dado, regra em Observer, tela que grava direto, id público sem trava…).
    - **Segurança** (`seguranca.md`, S1–S12): autorização no servidor em toda entrada, IDOR, listas e exports pelo mesmo predicado, injeção, XSS, atribuição em massa, upload, segredos, sessão/CSRF, SSRF, dependências, integridade de dado. Cada achado traz o caminho concreto de exploração.
-   - **Boas práticas da stack** (`boas-praticas-laravel.md`, `-python.md`, `-js.md`): consultas, transação e lock, validação, migrations, filas, tipagem, testes, front. Em Laravel, o auditor lê também **a íntegra do `laravel-best-practices`** do Laravel Boost (índice e as 19 rules, em `criterios/laravel-best-practices/`), e as skills da stack que o projeto tiver (ex.: com Filament, `filament-security-audit` e as referências do `filament-planning`, quando instaladas no projeto).
+   - **Boas práticas da stack** (`boas-praticas-laravel.md`, `-python.md`, `-js.md`): consultas, transação e lock, validação, migrations, filas, tipagem, testes, front. Em Laravel, o auditor lê também **a íntegra do `laravel-best-practices` e do `testing-best-practices`** do Laravel Boost v2.10.3 (em `criterios/`, a de testes na variante Pest ou PHPUnit do projeto), e as skills da stack que o projeto tiver (ex.: com Filament, `filament-security-audit` e as referências do `filament-planning`, quando instaladas no projeto).
    - **Ponytail** (`ponytail.md`, P1–P6, e **a íntegra do `ponytail` e do `ponytail-review`** em `criterios/ponytail/`): correto, seguro, aguenta carga, testado, rápido e enxuto — código que não precisava existir, reuso do que já há no repositório, abstração sem uso, duplicação.
 
    Cada achado traz arquivo:linha, evidência, o critério citado, prioridade P0–P3, correção, teste e se depende de decisão do dono.
@@ -76,5 +76,16 @@ bash tests/hook.sh
 ## Licença
 
 MIT © Victor Stochero. Incluídos sem alteração, cada um com sua licença ao lado:
-- `skills/auditar/criterios/laravel-best-practices/` — `laravel-best-practices` do [Laravel Boost](https://github.com/laravel/boost) v2.4.10, MIT © Taylor Otwell;
-- `skills/auditar/criterios/ponytail/` — `ponytail` e `ponytail-review` de [DietrichGebert/ponytail](https://github.com/DietrichGebert/ponytail) v5.2.0, MIT © DietrichGebert.
+- `skills/auditar/criterios/laravel-best-practices/` e `testing-best-practices/` — skills do [Laravel Boost](https://github.com/laravel/boost) v2.10.3, MIT © Taylor Otwell, renderizadas dos templates como o `boost:install` faz;
+- `skills/auditar/criterios/ponytail/` — `ponytail` e `ponytail-review` de [DietrichGebert/ponytail](https://github.com/DietrichGebert/ponytail) v5.3.2, MIT © DietrichGebert.
+
+## Atualizar os critérios de terceiros
+
+1. Ponytail: copie `skills/ponytail/SKILL.md` e `skills/ponytail-review/SKILL.md` da última release para `criterios/ponytail/ponytail.md` e `ponytail-review.md`.
+2. Boost: baixe `.ai/laravel/skill/laravel-best-practices/` e `.ai/laravel/skill/testing-best-practices/` da última release e renderize os templates `.blade.php` com o `manutencao/renderiza-boost.php` (usa o Blade de qualquer projeto Laravel; mesmo pipeline do Boost):
+   ```
+   php manutencao/renderiza-boost.php <projeto>/vendor/autoload.php <origem>/laravel-best-practices skills/auditar/criterios/laravel-best-practices pest
+   php manutencao/renderiza-boost.php <projeto>/vendor/autoload.php <origem>/testing-best-practices skills/auditar/criterios/testing-best-practices/pest pest
+   php manutencao/renderiza-boost.php <projeto>/vendor/autoload.php <origem>/testing-best-practices skills/auditar/criterios/testing-best-practices/phpunit phpunit
+   ```
+3. Atualize as versões citadas aqui e nos `criterios/*.md`, e suba a versão do `plugin.json`.

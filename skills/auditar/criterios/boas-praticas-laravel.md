@@ -1,6 +1,10 @@
 # Critérios — Boas práticas Laravel (PHP, Eloquent, Livewire, Filament, Pest)
 
-**Íntegra em `laravel-best-practices/`** (ao lado deste arquivo): `indice.md` e as 19 `rules/*.md` do `laravel-best-practices` do Laravel Boost v2.4.10 (MIT © Taylor Otwell, `laravel-best-practices/LICENSE.md`), sem alteração. Diff com PHP: leia o `indice.md` e **todas** as `rules/`; cada regra traz o porquê e o exemplo certo/errado. Se o projeto tiver a skill `laravel-best-practices` numa versão mais nova, ela prevalece.
+**Íntegra ao lado deste arquivo**, do Laravel Boost v2.10.3 (MIT © Taylor Otwell, `LICENSE.md` em cada pasta), renderizada como o `boost:install` faz e sem outra alteração:
+- `laravel-best-practices/` — `indice.md` e as 19 `rules/*.md`;
+- `testing-best-practices/pest/` ou `testing-best-practices/phpunit/` — `indice.md` e as 9 `rules/*.md` (assertions, endpoint-tests, finding-features, isolation, naming, performance, review, security, test-data); use a pasta do framework de teste do projeto (`pestphp/pest` no `composer.json` → `pest/`, variante para Pest 5).
+
+Diff com PHP: leia o `indice.md` e **todas** as `rules/` de `laravel-best-practices/`; diff que toca teste: também todas as de `testing-best-practices/<framework>/`. Cada regra traz o porquê e o exemplo certo/errado. Se o projeto tiver essas skills instaladas numa versão mais nova, a do projeto prevalece.
 
 Esta página é o mapa em pt-BR para citar nos achados (`boas-praticas-laravel § L4`, ou direto `laravel-best-practices/rules/security.md`), com o que mais volta em revisão. **Consistência primeiro**: o que o projeto já faz (e o guia de arquitetura dele) vence estes padrões; só aponte quando o diff cria um segundo jeito ou não há padrão.
 
@@ -35,7 +39,7 @@ Livewire: todo método público é entrada (ver `seguranca § S1`); `#[Locked]` 
 ## L10 — Blade e front
 Componentes Blade em vez de `@include` solto; `$attributes->merge()`; sem JS/CSS inline na Blade, sem HTML em classe PHP; sem query nem regra na view.
 
-## L11 — Testes (Pest/PHPUnit)
+## L11 — Testes (Pest/PHPUnit) — íntegra em `testing-best-practices/<framework>/`
 Factory e seus estados em vez de arranjo à mão; `LazilyRefreshDatabase`; fakes depois do arranjo; `assertModelExists`; teste de autorização com perfil real e os dois lados (pode e não pode), nunca super admin; correção de bug com teste que falhava antes; nada de apagar teste sem decisão.
 
 ## L12 — Tipagem e estilo

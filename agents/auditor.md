@@ -18,7 +18,7 @@ O caminho do pacote vem no pedido (`<dir>/pacote.md`): base, merge-base, HEAD, c
 1. **Critérios do plugin** (pasta indicada no pacote), todos obrigatórios:
    - `arquitetura.md` — A0 (o guia do projeto manda) e os padrões recorrentes A1–A18;
    - `seguranca.md` — S1–S12;
-   - `boas-praticas-<stack>.md` da stack do diff (`laravel`, `python`, `js`; mais de uma se o diff tocar mais de uma). Laravel: **também a íntegra** em `laravel-best-practices/` — `indice.md` e todas as `rules/*.md`;
+   - `boas-praticas-<stack>.md` da stack do diff (`laravel`, `python`, `js`; mais de uma se o diff tocar mais de uma). Laravel: **também a íntegra** em `laravel-best-practices/` — `indice.md` e todas as `rules/*.md` — e, se o diff tocar teste, em `testing-best-practices/<pest|phpunit>/` (a pasta do framework do projeto);
    - `ponytail.md` — P1–P6, **e a íntegra** em `ponytail/` (`ponytail.md` e `ponytail-review.md`).
    Não pule a íntegra por já ter lido o mapa: o detalhe (exemplos, exceções, o porquê) está nela.
 2. **Guia de arquitetura do projeto** indicado no pacote: índice e páginas dos assuntos do diff. Checklist do guia vira tabela item a item. O guia vence o código vizinho e os critérios genéricos.
