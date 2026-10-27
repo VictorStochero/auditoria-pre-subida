@@ -10,6 +10,9 @@ ruim() { echo "FALHA $1"; falhas=$((falhas + 1)); }
 repo=$tmp/repo
 git init -q -b main "$repo"
 git -C "$repo" -c user.name=t -c user.email=t@t commit -q --allow-empty -m base
+git init -q --bare "$tmp/remoto.git"
+git -C "$repo" remote add origin "$tmp/remoto.git"
+git -C "$repo" push -q origin main
 git -C "$repo" checkout -q -b feat/x
 git -C "$repo" -c user.name=t -c user.email=t@t commit -q --allow-empty -m trabalho
 sha=$(git -C "$repo" rev-parse HEAD)
@@ -24,10 +27,10 @@ EOF
 chmod +x "$tmp/bin/gh"
 export PATH="$tmp/bin:$PATH"
 
-json() { local c=${1//\\/\\\\}; c=${c//\"/\\\"}; printf '{"tool_name":"Bash","cwd":"%s","tool_input":{"command":"%s"}}' "$repo" "$c"; }
-confere() { # esperado(BLOQ|LIVRE) comando
+json() { local c=${1//\\/\\\\}; c=${c//\"/\\\"}; printf '{"tool_name":"Bash","cwd":"%s","tool_input":{"command":"%s"}}' "${2:-$repo}" "$c"; }
+confere() { # esperado(BLOQ|LIVRE) comando [cwd]
     local r=LIVRE
-    json "$2" | bash "$raiz/hooks/exige-auditoria.sh" 2>/dev/null; [ $? = 2 ] && r=BLOQ
+    json "$2" "${3:-}" | bash "$raiz/hooks/exige-auditoria.sh" 2>/dev/null; [ $? = 2 ] && r=BLOQ
     if [ "$r" = "$1" ]; then ok "$1: $2"; else ruim "esperado $1, veio $r: $2"; fi
 }
 
@@ -85,5 +88,27 @@ confere LIVRE 'git push origin main'
 confere LIVRE 'git push'
 git -C "$repo" -c user.name=t -c user.email=t@t commit -q --allow-empty -m direto
 confere BLOQ 'git push'
+
+# Formas de push na base que não nomeiam a branch, ou levam opção junto.
+confere BLOQ 'git push origin HEAD'
+confere BLOQ 'git push origin @'
+confere BLOQ 'git push origin main --tags'
+git -C "$repo" checkout -q feat/x
+confere BLOQ 'git push --all origin'
+git -C "$repo" checkout -q main
+
+# cd dentro do comando, com a sessão fora do repositório.
+mkdir -p "$tmp/fora"
+confere BLOQ "cd $repo && git push origin main" "$tmp/fora"
+confere BLOQ "cd $repo && gh pr create --fill" "$tmp/fora"
+
+# Merge aprovado por cima de commit direto não auditado não passa; merges aprovados em cadeia passam.
+aprova "$(git -C "$repo" rev-parse feat/x)" APROVADO
+git -C "$repo" -c user.name=t -c user.email=t@t merge -q --no-ff -m m-direto feat/x
+confere BLOQ 'git push origin main'
+git -C "$repo" reset -q --hard origin/main
+git -C "$repo" -c user.name=t -c user.email=t@t merge -q --no-ff -m m1 "$sha"
+git -C "$repo" -c user.name=t -c user.email=t@t merge -q --no-ff -m m2 feat/x
+confere LIVRE 'git push origin main'
 
 [ "$falhas" = 0 ] && echo "tudo ok" || { echo "$falhas falha(s)"; exit 1; }

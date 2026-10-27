@@ -22,9 +22,13 @@ aprovado() { # dir sha → veredito local em <git-common-dir>/auditoria/<sha>/ve
     comum=$(git -C "$1" rev-parse --path-format=absolute --git-common-dir 2>/dev/null) || return 1
     [ -n "$2" ] && head -1 "$comum/auditoria/$2/veredito.md" 2>/dev/null | grep -q '^VEREDITO: APROVADO'
 }
-aprovado_ou_merge() { # dir sha; shortcut: merge na base vale pelo segundo pai auditado, sem auditar a resolução de conflito
+aprovado_ou_merge() { # dir sha ref-remota; shortcut: merge na base vale pelo segundo pai auditado, sem auditar a resolução de conflito
     aprovado "$1" "$2" && return 0
-    local p2; p2=$(git -C "$1" rev-parse -q --verify "$2^2" 2>/dev/null) && aprovado "$1" "$p2"
+    local p1 p2
+    p2=$(git -C "$1" rev-parse -q --verify "$2^2" 2>/dev/null) && aprovado "$1" "$p2" || return 1
+    # o primeiro pai precisa já estar no remoto ou ser, ele também, aprovado/merge aprovado
+    p1=$(git -C "$1" rev-parse -q --verify "$2^1" 2>/dev/null) || return 1
+    git -C "$1" merge-base --is-ancestor "$p1" "$3" 2>/dev/null || aprovado_ou_merge "$1" "$p1" "$3"
 }
 eh_base() {
     local b padrao
@@ -37,24 +41,27 @@ eh_base() {
 
 confere_push() { # dir args...
     local dir=$1; shift
-    local a remoto="" refs=() pula=0
+    local a remoto="" refs=() pula=0 todas=0
     for a in "$@"; do
         if [ $pula = 1 ]; then pula=0; continue; fi
         case "$a" in
-            -d|--delete|--tags|--dry-run|-n) return 0 ;;
+            -d|--delete|--dry-run|-n) return 0 ;;
+            --all|--branches|--mirror) todas=1 ;;
             -o|--push-option|--repo|--receive-pack|--exec) pula=1 ;;
             -*) ;;
             *) if [ -z "$remoto" ]; then remoto=$a; else refs+=("$a"); fi ;;
         esac
     done
+    [ $todas = 1 ] && mapfile -t refs < <(git -C "$dir" for-each-ref --format='%(refname:short)' refs/heads)
     [ ${#refs[@]} = 0 ] && refs=("$(git -C "$dir" symbolic-ref -q --short HEAD 2>/dev/null)")
     local r src dst sha
     for r in "${refs[@]}"; do
         r=${r#+}; src=${r%%:*}; dst=${r#*:}
         dst=${dst#refs/heads/}
+        case "$dst" in HEAD|@) dst=$(git -C "$dir" symbolic-ref -q --short HEAD 2>/dev/null) ;; esac
         eh_base "$dst" || continue
         sha=$(git -C "$dir" rev-parse -q --verify "${src:-HEAD}^{commit}" 2>/dev/null) || continue
-        aprovado_ou_merge "$dir" "$sha" || bloqueia "push direto em '$dst' com ${sha:0:9} sem auditoria aprovada."
+        aprovado_ou_merge "$dir" "$sha" "refs/remotes/${remoto:-origin}/$dst" || bloqueia "push direto em '$dst' com ${sha:0:9} sem auditoria aprovada."
     done
 }
 confere_pr_create() { # dir args...
@@ -97,6 +104,15 @@ while IFS= read -r seg; do
     prog=${1##*[/\\]}; prog=${prog%.exe}; shift
     dir=$wd
     case "$prog" in
+        cd|pushd|Set-Location|sl)
+            case "${1:-}" in -Path|-LiteralPath) shift ;; esac
+            case "${1:-}" in
+                '') ;;
+                /*|[A-Za-z]:*) wd=$1 ;;
+                \~*) wd=$HOME${1#\~} ;;
+                *) wd=$wd/$1 ;;
+            esac
+            ;;
         git)
             while [ $# -gt 0 ]; do
                 case "$1" in
