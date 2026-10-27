@@ -70,4 +70,4 @@ Mostre ao usuário uma tabela (achado · prioridade · arquivo:linha · correç�
 ## 8. Depois de aprovado
 - Ao abrir o PR, inclua no corpo a linha `auditoria-pre-subida: APROVADO <sha completo>` e o resumo do veredito: quem mesclar em outra máquina passa pelo hook por esse marcador.
 - PR já aberto e commit novo aprovado: o marcador vai num comentário (`gh pr comment`) — é ação remota, peça confirmação ao usuário antes.
-- Merge local na base e push: o hook aceita o commit de merge cujo segundo pai foi aprovado.
+- Merge local na base e push: o hook aceita o commit de merge cujo segundo pai foi aprovado e cujo primeiro pai já está no remoto (ou passa pela mesma regra).

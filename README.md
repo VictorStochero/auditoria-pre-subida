@@ -54,7 +54,7 @@ Reprovou: corrija, commite e rode de novo. A reauditoria confere as correções 
 |---|---|
 | `gh pr create` | veredito APROVADO do `HEAD` (ou do `--head`) |
 | `gh pr merge` | veredito local do head do PR, ou a linha `auditoria-pre-subida: APROVADO <sha>` no corpo ou num comentário do PR (merge feito em outra máquina) |
-| `git push` para branch base | veredito do commit enviado; merge local vale pelo segundo pai aprovado |
+| `git push` para branch base | veredito do commit enviado, ou commit que já está no remoto; merge local vale pelo segundo pai aprovado se o primeiro já estiver no remoto (ou passar pela mesma regra) |
 
 Só em repositório ativado (acima). Push da sua branch de trabalho é livre. Bases padrão: `main master homologacao desenvolvimento develop production producao staging` e a `origin/HEAD` do repositório. Para trocar, defina `AUDITORIA_BASES` (separadas por espaço) no `env` do `settings.json`.
 

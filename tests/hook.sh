@@ -93,6 +93,8 @@ confere BLOQ 'git push'
 confere BLOQ 'git push origin HEAD'
 confere BLOQ 'git push origin @'
 confere BLOQ 'git push origin main --tags'
+confere LIVRE 'git push origin --tags'
+confere LIVRE 'git push --tags'
 git -C "$repo" checkout -q feat/x
 confere BLOQ 'git push --all origin'
 git -C "$repo" checkout -q main
@@ -101,14 +103,27 @@ git -C "$repo" checkout -q main
 mkdir -p "$tmp/fora"
 confere BLOQ "cd $repo && git push origin main" "$tmp/fora"
 confere BLOQ "cd $repo && gh pr create --fill" "$tmp/fora"
+confere BLOQ "cd $repo && git -C . push origin main" "$tmp/fora"
+confere BLOQ "Set-Location -Path $repo; git push origin main" "$tmp/fora"
+confere BLOQ "cd repo && git push origin main" "$tmp"
 
 # Merge aprovado por cima de commit direto não auditado não passa; merges aprovados em cadeia passam.
 aprova "$(git -C "$repo" rev-parse feat/x)" APROVADO
 git -C "$repo" -c user.name=t -c user.email=t@t merge -q --no-ff -m m-direto feat/x
 confere BLOQ 'git push origin main'
 git -C "$repo" reset -q --hard origin/main
+confere LIVRE 'git push origin main'
 git -C "$repo" -c user.name=t -c user.email=t@t merge -q --no-ff -m m1 "$sha"
 git -C "$repo" -c user.name=t -c user.email=t@t merge -q --no-ff -m m2 feat/x
 confere LIVRE 'git push origin main'
+
+# Octopus não passa: os pais além do segundo não seriam conferidos.
+git -C "$repo" reset -q --hard origin/main
+git -C "$repo" checkout -q -b feat/y
+git -C "$repo" -c user.name=t -c user.email=t@t commit -q --allow-empty -m y
+aprova "$(git -C "$repo" rev-parse feat/y)" APROVADO
+git -C "$repo" checkout -q main
+git -C "$repo" -c user.name=t -c user.email=t@t merge -q --no-ff -m octopus feat/x feat/y >/dev/null
+confere BLOQ 'git push origin main'
 
 [ "$falhas" = 0 ] && echo "tudo ok" || { echo "$falhas falha(s)"; exit 1; }

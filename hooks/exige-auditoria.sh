@@ -23,12 +23,12 @@ aprovado() { # dir sha → veredito local em <git-common-dir>/auditoria/<sha>/ve
     [ -n "$2" ] && head -1 "$comum/auditoria/$2/veredito.md" 2>/dev/null | grep -q '^VEREDITO: APROVADO'
 }
 aprovado_ou_merge() { # dir sha ref-remota; shortcut: merge na base vale pelo segundo pai auditado, sem auditar a resolução de conflito
+    git -C "$1" merge-base --is-ancestor "$2" "$3" 2>/dev/null && return 0 # já está no remoto: nada novo sobe
     aprovado "$1" "$2" && return 0
-    local p1 p2
-    p2=$(git -C "$1" rev-parse -q --verify "$2^2" 2>/dev/null) && aprovado "$1" "$p2" || return 1
-    # o primeiro pai precisa já estar no remoto ou ser, ele também, aprovado/merge aprovado
-    p1=$(git -C "$1" rev-parse -q --verify "$2^1" 2>/dev/null) || return 1
-    git -C "$1" merge-base --is-ancestor "$p1" "$3" 2>/dev/null || aprovado_ou_merge "$1" "$p1" "$3"
+    git -C "$1" rev-parse -q --verify "$2^3" >/dev/null 2>&1 && return 1 # octopus: pais além do segundo não seriam conferidos
+    local p
+    p=$(git -C "$1" rev-parse -q --verify "$2^2" 2>/dev/null) && aprovado "$1" "$p" || return 1
+    p=$(git -C "$1" rev-parse -q --verify "$2^1" 2>/dev/null) && aprovado_ou_merge "$1" "$p" "$3"
 }
 eh_base() {
     local b padrao
@@ -41,19 +41,21 @@ eh_base() {
 
 confere_push() { # dir args...
     local dir=$1; shift
-    local a remoto="" refs=() pula=0 todas=0
+    local a remoto="" refs=() pula=0 todas=0 tags=0
     for a in "$@"; do
         if [ $pula = 1 ]; then pula=0; continue; fi
         case "$a" in
             -d|--delete|--dry-run|-n) return 0 ;;
             --all|--branches|--mirror) todas=1 ;;
+            --tags) tags=1 ;;
             -o|--push-option|--repo|--receive-pack|--exec) pula=1 ;;
             -*) ;;
             *) if [ -z "$remoto" ]; then remoto=$a; else refs+=("$a"); fi ;;
         esac
     done
-    [ $todas = 1 ] && mapfile -t refs < <(git -C "$dir" for-each-ref --format='%(refname:short)' refs/heads)
-    [ ${#refs[@]} = 0 ] && refs=("$(git -C "$dir" symbolic-ref -q --short HEAD 2>/dev/null)")
+    # shellcheck disable=SC2207 # set -f ativo e nome de branch sem espaço; mapfile não existe no bash 3.2 do macOS
+    [ $todas = 1 ] && refs=($(git -C "$dir" for-each-ref --format='%(refname:short)' refs/heads))
+    [ ${#refs[@]} = 0 ] && [ $tags = 0 ] && refs=("$(git -C "$dir" symbolic-ref -q --short HEAD 2>/dev/null)")
     local r src dst sha
     for r in "${refs[@]}"; do
         r=${r#+}; src=${r%%:*}; dst=${r#*:}
@@ -116,7 +118,7 @@ while IFS= read -r seg; do
         git)
             while [ $# -gt 0 ]; do
                 case "$1" in
-                    -C) dir=$2; shift 2 ;;
+                    -C) case "$2" in /*|[A-Za-z]:*) dir=$2 ;; *) dir=$dir/$2 ;; esac; shift 2 ;;
                     -c) shift 2 ;;
                     -*) shift ;;
                     *) break ;;
