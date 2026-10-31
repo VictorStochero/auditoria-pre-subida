@@ -35,11 +35,12 @@ Com a branch commitada:
 
 O fluxo:
 1. **Validação da stack** nos arquivos tocados (formatador, linter, análise estática, testes). Se falhar, reprova sem gastar o auditor.
-2. **Auditor** (Opus, só leitura): confere o diff em quatro dimensões, cada uma com critérios numerados que vêm no plugin (`skills/auditar/criterios/`) e não dependem de outra instalação:
+2. **Auditor** (Opus, só leitura): confere o diff em cinco dimensões, cada uma com critérios numerados que vêm no plugin (`skills/auditar/criterios/`) e não dependem de outra instalação:
    - **Arquitetura** (`arquitetura.md`): o guia do projeto manda (`wiki/`, `docs/` ou `doc/` + `arquitetura`/`architecture`, com o checklist dele item a item); sem guia, valem 18 padrões recorrentes (teste de autorização com administrador, regra duplicada, migration com dado, regra em Observer, tela que grava direto, id público sem trava…).
    - **Segurança** (`seguranca.md`, S1–S12): autorização no servidor em toda entrada, IDOR, listas e exports pelo mesmo predicado, injeção, XSS, atribuição em massa, upload, segredos, sessão/CSRF, SSRF, dependências, integridade de dado. Cada achado traz o caminho concreto de exploração.
    - **Boas práticas da stack** (`boas-praticas-laravel.md`, `-python.md`, `-js.md`): consultas, transação e lock, validação, migrations, filas, tipagem, testes, front. Em Laravel, o auditor lê também **a íntegra do `laravel-best-practices` e do `testing-best-practices`** do Laravel Boost v2.10.3 (em `criterios/`, a de testes na variante Pest ou PHPUnit do projeto), e as skills da stack que o projeto tiver (ex.: com Filament, `filament-security-audit` e as referências do `filament-planning`, quando instaladas no projeto).
    - **Ponytail** (`ponytail.md`, P1–P6, e **a íntegra do `ponytail` e do `ponytail-review`** em `criterios/ponytail/`): correto, seguro, aguenta carga, testado, rápido e enxuto — código que não precisava existir, reuso do que já há no repositório, abstração sem uso, duplicação.
+   - **Entrega** (`entrega.md`, E1–E5): escopo (cada trecho do diff ligado ao pedido), comportamento preservado em refatoração, sintaxe e estática que a validação não cobriu, evidência de navegador (perfil real, antes × depois, ação exercitada) e integração externa testada de verdade (`Http::fake` não basta). O auditor é só leitura: confere a evidência que a sessão principal põe no pacote.
 
    Cada achado traz arquivo:linha, evidência, o critério citado, prioridade P0–P3, correção, teste e se depende de decisão do dono.
 3. **Verificador** (Opus, só leitura): tenta refutar cada achado. Só fica o que resistir.
