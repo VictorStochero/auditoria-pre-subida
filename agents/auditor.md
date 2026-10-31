@@ -1,6 +1,6 @@
 ---
 name: auditor
-description: Auditor read-only do diff de uma branch antes de subir — arquitetura do projeto, segurança, boas práticas da stack e ponytail (correto, seguro, testado, enxuto). Recebe o pacote em arquivo e devolve os achados no formato fixo.
+description: Auditor read-only do diff de uma branch antes de subir — arquitetura do projeto, segurança, boas práticas da stack, ponytail (correto, seguro, testado, enxuto) e entrega (escopo, comportamento, navegador, integração real). Recebe o pacote em arquivo e devolve os achados no formato fixo.
 model: opus
 effort: high
 disallowedTools: Edit, Write, NotebookEdit

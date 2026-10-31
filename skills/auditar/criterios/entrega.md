@@ -12,7 +12,7 @@ Quando o pacote diz que a tarefa é refatoração sem pedido de mudança, o comp
 
 ## E3 — Sintaxe e estática
 Linter/`php -l`, formatador, análise estática, rotas, compilação de views e listagem da suíte. A etapa 2 da skill (Validação da stack) já roda isso nos arquivos tocados; este critério só aponta o que ela **não cobriu**: view tocada que não compila, rota que não lista, teste novo que a suíte não descobre, arquivo de tipo que a etapa 2 não alcança.
-- Como verificar: confira a saída da etapa 2 no pacote contra os tipos de arquivo do diff (Blade/Jinja/JSX, rotas, config, testes); lacuna é achado.
+- Como verificar: confira os comandos da etapa 2 registrados no pacote contra os tipos de arquivo do diff (Blade/Jinja/JSX, rotas, config, testes); lacuna é achado.
 
 ## E4 — Navegador
 Toda tela tocada foi validada com **perfil real (nunca administrador)**, comparada com a mesma tela na base (mesmo banco, código antes × depois) e **exercitando a ação** (gravar, não só ver o botão). Tela que não monta no ambiente local não justifica pular: monta-se o dado. O auditor não abre navegador: confere a evidência no pacote (relatório e prints da sessão principal).

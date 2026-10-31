@@ -24,7 +24,7 @@ Em ordem de frequência. Cada um é uma verificação fixa.
 | A12 — Tela grava direto | página/componente/view fazendo `create`/`update` de negócio sem passar pela camada de regra | regra repetida e sem transação |
 | A13 — Id público sem trava | ver `seguranca § S2` | IDOR |
 | A14 — Nome de tabela à mão em SQL | `'tabela'` literal em query crua | renomear tabela quebra em silêncio |
-| A15 — Comportamento visível mudou sem decisão | coluna, filtro, campo, botão, aba, ordenação ou granularidade de lista mudou sem pedido registrado | o usuário perde algo que usava |
+| A15 — Comportamento visível mudou sem decisão | coluna, filtro, campo, botão, aba, ordenação ou granularidade de lista mudou sem pedido registrado (em refatoração, ver `entrega § E2`) | o usuário perde algo que usava |
 | A16 — Query no template | consulta ao banco dentro de Blade/Jinja/JSX de servidor | N+1 escondido e regra na tela |
 | A17 — Herança de página/tela | `BaseX` com subclasses variando a mesma tela | mudança numa variante quebra a outra |
 | A18 — Service com regra de negócio que tem dono | "Service" genérico acumulando regras de domínios diferentes | sem fronteira, tudo depende de tudo |
@@ -32,5 +32,5 @@ Em ordem de frequência. Cada um é uma verificação fixa.
 ## Princípios gerais (quando o guia é omisso)
 - Uma pergunta por camada: tela coleta e autoriza; a regra de negócio vive numa unidade de propósito único (Action/use case/service do domínio); persistência no model/repositório; efeito externo depois do commit.
 - Nomes do domínio do negócio, no idioma do projeto; pasta pelo domínio, não pelo tipo técnico, se o projeto já faz assim.
-- Refatoração preserva comportamento: diferença de comportamento achada é regressão, não melhoria, salvo decisão do dono.
+- Refatoração preserva comportamento: diferença de comportamento achada é regressão, não melhoria, salvo pedido na issue ou do dono; em refatoração sem pedido de mudança vale `entrega § E2` (restaurar, não perguntar).
 - Código morto sai junto com a mudança que o tornou morto; teste dele também.
