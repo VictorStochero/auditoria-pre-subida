@@ -5,7 +5,7 @@ description: Use antes de abrir PR, mesclar PR ou dar push direto numa branch ba
 
 # Auditoria antes de subir
 
-Quatro dimensões, com critérios numerados em `criterios/` (ao lado deste arquivo), que o auditor lê inteiros e cita em cada achado:
+Cinco dimensões, com critérios numerados em `criterios/` (ao lado deste arquivo), que o auditor lê inteiros e cita em cada achado:
 
 | Dimensão | Arquivo | O que cobre |
 |---|---|---|
@@ -13,6 +13,7 @@ Quatro dimensões, com critérios numerados em `criterios/` (ao lado deste arqui
 | Segurança | `seguranca.md` | S1–S12: autorização no servidor, IDOR, listas/exports, injeção, XSS, atribuição em massa, upload, segredos, sessão/CSRF, SSRF, dependências, integridade |
 | Boas práticas | `boas-praticas-<stack>.md` + `laravel-best-practices/` + `testing-best-practices/` | Laravel (L1–L12 + a íntegra do `laravel-best-practices` e do `testing-best-practices` do Boost v2.10.3, variante Pest ou PHPUnit), Python (Y1–Y8), JS/TS (J1–J8), somadas à skill da stack do projeto, se houver |
 | Ponytail | `ponytail.md` + `ponytail/` | P1–P6 + a íntegra do `ponytail` e do `ponytail-review`: correto, seguro, aguenta carga, testado, rápido, enxuto |
+| Entrega | `entrega.md` | E1–E5: escopo (diff ligado ao pedido), comportamento preservado em refatoração, sintaxe/estática não coberta, evidência de navegador, integração externa testada de verdade |
 
 Em repositório com o arquivo `.auditoria-pre-subida` na raiz (ativação versionada pelo projeto), o hook `exige-auditoria.sh` bloqueia `gh pr create`, `gh pr merge` e `git push` direto numa branch base enquanto o commit que sobe não tiver `VEREDITO: APROVADO`. Esta skill produz esse veredito e roda também em repositório sem o arquivo (só não há bloqueio). Para ativar o bloqueio, o usuário versiona o arquivo vazio — sugira, não crie por conta própria. **Qualquer achado confirmado no que a branch toca reprova** (P0 a P3); dívida pré-existente é listada e não reprova.
 
@@ -34,7 +35,8 @@ Falhou → `VEREDITO: REPROVADO` com a saída, sem gastar auditor. Se o ambiente
 ## 3. Pacote
 Grave em `$D`:
 - `diff.patch`: `git diff $mb..HEAD`.
-- `pacote.md`: **caminho absoluto da pasta `criterios/` desta skill** (o diretório base da skill + `/criterios`: `arquitetura.md`, `seguranca.md`, `boas-praticas-laravel.md`, `boas-praticas-python.md`, `boas-praticas-js.md`, `ponytail.md` e as íntegras `laravel-best-practices/`, `testing-best-practices/` e `ponytail/`), o framework de teste do projeto (Pest ou PHPUnit), branch, base, merge-base e HEAD (curto e completo), `git log --oneline $mb..HEAD`, `git diff --stat $mb..HEAD`, stack detectada (`composer.json`, `pyproject.toml`/`requirements*.txt`, `package.json`), e os caminhos que existirem: guia de arquitetura (`wiki/`, `docs/`, `doc/` + `arquitetura`/`architecture`; ou o que o `CLAUDE.md` apontar), checklist do guia (Grep por `Checklist` no guia), `CLAUDE.md`, `AGENTS.md`, `.claude/skills`, `.ai/skills`. Caminho absoluto do `diff.patch`.
+- `pacote.md`: **caminho absoluto da pasta `criterios/` desta skill** (o diretório base da skill + `/criterios`: `arquitetura.md`, `seguranca.md`, `boas-praticas-laravel.md`, `boas-praticas-python.md`, `boas-praticas-js.md`, `ponytail.md`, `entrega.md` e as íntegras `laravel-best-practices/`, `testing-best-practices/` e `ponytail/`), o framework de teste do projeto (Pest ou PHPUnit), branch, base, merge-base e HEAD (curto e completo), `git log --oneline $mb..HEAD`, `git diff --stat $mb..HEAD`, stack detectada (`composer.json`, `pyproject.toml`/`requirements*.txt`, `package.json`), e os caminhos que existirem: guia de arquitetura (`wiki/`, `docs/`, `doc/` + `arquitetura`/`architecture`; ou o que o `CLAUDE.md` apontar), checklist do guia (Grep por `Checklist` no guia), `CLAUDE.md`, `AGENTS.md`, `.claude/skills`, `.ai/skills`. Caminho absoluto do `diff.patch`.
+- Para a dimensão Entrega, o `pacote.md` leva também (da sessão principal; o auditor não abre navegador nem roda teste): o **pedido original/issue e o critério de pronto**; se a tarefa é **refatoração sem pedido de mudança**; as **telas tocadas com a evidência de navegador** (perfil usado, antes × depois, ação exercitada); as **integrações externas tocadas com a evidência do teste real**. O que não houver, registre como "sem evidência" — o auditor trata como achado.
 - Reauditoria (já existe `auditoria/<sha anterior>/` desta branch, `REPROVADO`): acrescente ao pacote os achados anteriores e o `git diff <sha anterior>..HEAD`. O auditor confere as correções e audita só o delta.
 
 Diff grande (mais de ~40 arquivos ou ~3.000 linhas): divida por domínio/pasta em até 4 fatias, um `pacote-<fatia>.md` cada, e um auditor por fatia em paralelo.
