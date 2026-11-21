@@ -19,7 +19,7 @@ ativo() { # dir; o arquivo numa base do remoto também ativa: apagá-lo na branc
     [ -f "$raiz/.auditoria-pre-subida" ] && return 0
     for b in $(bases "$1"); do
         # ls-tree e não <ref>:<caminho>: o Git Bash converte o "a/b:c" como lista de caminhos do Windows
-        [ -n "$(git -C "$1" ls-tree --name-only "refs/remotes/origin/$b" -- .auditoria-pre-subida 2>/dev/null)" ] && return 0
+        [ -n "$(git -C "$1" ls-tree --full-tree --name-only "refs/remotes/origin/$b" -- .auditoria-pre-subida 2>/dev/null)" ] && return 0
     done
     return 1
 }

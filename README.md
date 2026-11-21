@@ -15,7 +15,7 @@ Requisitos: `git` ≥ 2.31, `bash` (no Windows, o do Git for Windows) e `gh` aut
 
 ## Ativar num projeto
 
-Instalar não bloqueia nada: o hook só age em repositório que tenha o arquivo `.auditoria-pre-subida` na raiz. Os outros projetos da máquina seguem como estão.
+Instalar não bloqueia nada: o hook só age em repositório que tenha o arquivo `.auditoria-pre-subida` na raiz ou numa branch base do remoto (`origin/<base>`). Os outros projetos da máquina seguem como estão.
 
 ```
 touch .auditoria-pre-subida

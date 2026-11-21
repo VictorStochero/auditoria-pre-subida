@@ -15,7 +15,7 @@ Cinco dimensões, com critérios numerados em `criterios/` (ao lado deste arquiv
 | Ponytail | `ponytail.md` + `ponytail/` | P1–P6 + a íntegra do `ponytail` e do `ponytail-review`: correto, seguro, aguenta carga, testado, rápido, enxuto |
 | Entrega | `entrega.md` | E1–E6: escopo (diff ligado ao pedido), comportamento preservado em refatoração, sintaxe/estática não coberta, evidência de navegador, integração externa testada de verdade, mudança nas regras da auditoria |
 
-Em repositório com o arquivo `.auditoria-pre-subida` na raiz (ativação versionada pelo projeto), o hook `exige-auditoria.sh` bloqueia `gh pr create`, `gh pr merge` e `git push` direto numa branch base enquanto o commit que sobe não tiver `VEREDITO: APROVADO`. Esta skill produz esse veredito e roda também em repositório sem o arquivo (só não há bloqueio). Para ativar o bloqueio, o usuário versiona o arquivo vazio — sugira, não crie por conta própria. **Qualquer achado confirmado no que a branch toca reprova** (P0 a P3); dívida pré-existente é listada e não reprova.
+Em repositório com o arquivo `.auditoria-pre-subida` na raiz ou numa branch base do remoto (`origin/<base>`; apagá-lo na branch de trabalho não desliga), ativação versionada pelo projeto, o hook `exige-auditoria.sh` bloqueia `gh pr create`, `gh pr merge` e `git push` direto numa branch base enquanto o commit que sobe não tiver `VEREDITO: APROVADO`. Esta skill produz esse veredito e roda também em repositório sem o arquivo (só não há bloqueio). Para ativar o bloqueio, o usuário versiona o arquivo vazio — sugira, não crie por conta própria. **Qualquer achado confirmado no que a branch toca reprova** (P0 a P3); dívida pré-existente é listada e não reprova.
 
 Arquivos da auditoria: `D=$(git rev-parse --path-format=absolute --git-common-dir)/auditoria/<sha do HEAD>/` — fica fora do versionamento e é compartilhada pelos worktrees do repositório.
 
@@ -41,7 +41,7 @@ Depois da validação da stack, rode e grave a saída em `$D`. Ferramenta ausent
 - **Dependências**, só se o diff tocar lockfile (senão "não se aplica"):
   - `composer.lock`: `composer audit --locked --format=json > "$D/deps-composer.json"`
   - JS: o audit do gerenciador do projeto, em JSON, `$D/deps-<npm|pnpm|yarn>.json` — `npm audit --omit=dev --json`, `pnpm audit --prod --json`, `yarn npm audit --json`
-  - Python: `pip-audit --format json -o "$D/deps-pip-audit.json"`
+  - Python (`requirements*.txt`, `pyproject.toml`, `poetry.lock`, `uv.lock`, `Pipfile.lock`): `pip-audit -r <requirements tocado> --format json -o "$D/deps-pip-audit.json"`; sem `requirements*.txt`, rode dentro do ambiente do projeto (`uv run pip-audit …`, `poetry run pip-audit …` ou com o venv ativo). Sem entrada e fora do ambiente, ele audita o Python onde está instalado e devolve "0" falso.
 - **Semgrep** como pistas, nunca veredito, só o achado novo da branch: `semgrep scan --baseline-commit "$mb" --metrics=off --config p/security-audit --config <pacote da stack> --json --output "$D/semgrep.json" --quiet`; pacote da stack: `p/php`, `p/python`, `p/javascript` ou `p/typescript` (um `--config` por stack tocada).
 - Resumo em `$D/scanners.md`: ferramenta · versão · comando · resultado (`n achados` | `não rodou` | `não se aplica`); sem valor de segredo. O `pacote.md` aponta para ele e para os JSON.
 
