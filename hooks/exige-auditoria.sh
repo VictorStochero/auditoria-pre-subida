@@ -15,15 +15,12 @@ bloqueia() {
     exit 2
 }
 ativo() { # dir; o arquivo numa base do remoto também ativa: apagá-lo na branch não desliga o bloqueio
-    local raiz b r; raiz=$(git -C "$1" rev-parse --show-toplevel 2>/dev/null) || return 1
+    local raiz b r bs; raiz=$(git -C "$1" rev-parse --show-toplevel 2>/dev/null) || return 1
     [ -f "$raiz/.auditoria-pre-subida" ] && return 0
-    for r in $(git -C "$1" remote); do
-        for b in $(bases "$1"); do
-            # ls-tree e não <ref>:<caminho>: o Git Bash converte o "a/b:c" como lista de caminhos do Windows
-            [ -n "$(git -C "$1" ls-tree --full-tree --name-only "refs/remotes/$r/$b" -- .auditoria-pre-subida 2>/dev/null)" ] && return 0
-        done
-    done
-    return 1
+    bs=$(bases "$1")
+    # um processo só, e pela entrada: como argumento, o Git Bash converteria "a/b:c" em lista de caminhos do Windows
+    for r in $(git -C "$1" remote); do for b in $bs; do echo "refs/remotes/$r/$b:.auditoria-pre-subida"; done; done \
+        | git -C "$1" cat-file --batch-check 2>/dev/null | grep -q ' blob '
 }
 aprovado() { # dir sha → veredito local em <git-common-dir>/auditoria/<sha>/veredito.md
     local comum

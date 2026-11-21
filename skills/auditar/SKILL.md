@@ -45,7 +45,7 @@ Depois da validação da stack, rode e grave a saída em `$D`. Ferramenta ausent
 - **Semgrep** como pistas, nunca veredito, só o achado novo da branch: `semgrep scan --baseline-commit "$mb" --metrics=off --config p/security-audit --config <pacote da stack> --json --output "$D/semgrep.json" --quiet`; pacote da stack: `p/php`, `p/python`, `p/javascript` ou `p/typescript` (um `--config` por stack tocada).
 - Resumo em `$D/scanners.md`: ferramenta · versão · comando · resultado (`n achados` | `não rodou` | `não se aplica`); sem valor de segredo. O `pacote.md` aponta para ele e para os JSON.
 
-Achado de scanner **não reprova sozinho e não pula o auditor**: entra no pacote e o auditor o transforma em achado ou o descarta com motivo (`auditor.md` § Scanners). Correção de segredo em commit da branch: revogar/rotacionar a chave **e** reescrever a branch (o segredo continua no histórico); se a branch já foi para o remoto, rotacionar é obrigatório.
+Achado de scanner **não reprova sozinho e não pula o auditor**: entra no pacote e o auditor o transforma em achado ou o descarta com motivo (`auditor.md` § Scanners, que traz também a correção de segredo em commit da branch).
 
 ## 3. Pacote
 Grave em `$D`:
@@ -64,7 +64,7 @@ Despache o subagente `auditoria-pre-subida:auditor` (Opus, só leitura) com o pe
 Se o ambiente impuser outro despachante para revisão (ex.: worker do Orca), use-o com o mesmo agente (`claude --agent auditoria-pre-subida:auditor`) e o mesmo pedido; vale também para o auditor de segurança abaixo e para o verificador.
 
 **Auditor de segurança extra (condicional).** A sessão decide pelo diff, sem agente. Há gatilho se:
-- `git diff --name-only $mb..HEAD` tem caminho que contém `route|controller|polic|permission|middleware|auth|livewire|filament|api|upload|webhook|mcp` (sem diferenciar maiúsculas: `grep -Ei`), ou
+- `git diff --name-only $mb..HEAD` tem caminho que casa `route|controller|polic|permission|middleware|livewire|filament|upload|webhook|(^|[/_.-])(api|auth|mcp)` (sem diferenciar maiúsculas: `grep -Ei`; `api`, `auth` e `mcp` só no começo de um trecho do caminho, para `capitulo` ou `rapido` não dispararem), ou
 - `git diff $mb..HEAD -G '<regex>' --name-only` lista algo, com `<regex>` = `DB::raw|whereRaw|selectRaw|orderByRaw|havingRaw|cursor\.execute|\.raw\(|shell_exec|proc_open|subprocess|child_process|eval\(|unserialize|pickle\.loads|yaml\.load|\{!!|v-html|dangerouslySetInnerHTML|mark_safe|innerHTML|Storage::|UploadedFile|withoutMiddleware|Gate::|authorize` (regex estendida do git).
 
 Com gatilho, despache **em paralelo** ao auditor principal uma segunda instância de `auditoria-pre-subida:auditor` com "Audite o pacote em `<D>/pacote.md` com foco: segurança." e grave a resposta em `$D/achados-seguranca.md`. Junte as duas listas em `achados.md`: mesmo Onde + mesmo critério = um achado só (fica o de caminho completo), numeração A<k> contínua. Com fatias, um auditor de segurança por fatia que tenha gatilho.
