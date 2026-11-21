@@ -32,11 +32,27 @@ Rode nos arquivos tocados (`git diff --name-only $mb..HEAD`) o que o projeto tiv
 - JS/TS: `eslint`/`biome`, `prettier --check`, `tsc --noEmit`, testes tocados (`vitest`/`jest`).
 Falhou → `VEREDITO: REPROVADO` com a saída, sem gastar auditor. Se o ambiente tiver fila ou wrapper de testes próprio, use-o.
 
+### Scanners
+Depois da validação da stack, rode e grave a saída em `$D`. Ferramenta ausente **não reprova**: registre "não rodou: <ferramenta> não instalada" e siga. Código de saída 1 do gitleaks e 183 do TruffleHog (com `--fail`) só significam "achou"; leia o JSON.
+- **Segredos commit a commit** em `$mb..HEAD` — pega o segredo que entrou e saiu dentro da branch, que o `diff.patch` final não mostra:
+  - `gitleaks git --log-opts="$mb..HEAD" --redact --no-banner --report-format json --report-path "$D/gitleaks.json" .`
+  - `trufflehog git file://. --since-commit "$mb" --json --no-update > "$D/trufflehog.json"` (verificação ligada: consulta a API do provedor da chave).
+  - O JSON do TruffleHog traz o segredo em claro: fica só em `$D` (dentro do `.git`, fora do versionamento). **Achados, veredito e mensagens nunca copiam o valor** — só commit, arquivo, linha, detector e se foi verificado.
+- **Dependências**, só se o diff tocar lockfile (senão "não se aplica"):
+  - `composer.lock`: `composer audit --locked --format=json > "$D/deps-composer.json"`
+  - JS: o audit do gerenciador do projeto, em JSON, `$D/deps-<npm|pnpm|yarn>.json` — `npm audit --omit=dev --json`, `pnpm audit --prod --json`, `yarn npm audit --json`
+  - Python: `pip-audit --format json -o "$D/deps-pip-audit.json"`
+- **Semgrep** como pistas, nunca veredito, só o achado novo da branch: `semgrep scan --baseline-commit "$mb" --metrics=off --config p/security-audit --config <pacote da stack> --json --output "$D/semgrep.json" --quiet`; pacote da stack: `p/php`, `p/python`, `p/javascript` ou `p/typescript` (um `--config` por stack tocada).
+- Resumo em `$D/scanners.md`: ferramenta · versão · comando · resultado (`n achados` | `não rodou` | `não se aplica`); sem valor de segredo. O `pacote.md` aponta para ele e para os JSON.
+
+Achado de scanner **não reprova sozinho e não pula o auditor**: entra no pacote e o auditor o transforma em achado ou o descarta com motivo (`auditor.md` § Scanners). Correção de segredo em commit da branch: revogar/rotacionar a chave **e** reescrever a branch (o segredo continua no histórico); se a branch já foi para o remoto, rotacionar é obrigatório.
+
 ## 3. Pacote
 Grave em `$D`:
 - `diff.patch`: `git diff $mb..HEAD`.
 - `pacote.md`: **caminho absoluto da pasta `criterios/` desta skill** (o diretório base da skill + `/criterios`: `arquitetura.md`, `seguranca.md`, `boas-praticas-laravel.md`, `boas-praticas-python.md`, `boas-praticas-js.md`, `ponytail.md`, `entrega.md` e as íntegras `laravel-best-practices/`, `testing-best-practices/` e `ponytail/`), o framework de teste do projeto (Pest ou PHPUnit), branch, base, merge-base e HEAD (curto e completo), `git log --oneline $mb..HEAD`, `git diff --stat $mb..HEAD`, stack detectada (`composer.json`, `pyproject.toml`/`requirements*.txt`, `package.json`), e os caminhos que existirem: guia de arquitetura (`wiki/`, `docs/`, `doc/` + `arquitetura`/`architecture`; ou o que o `CLAUDE.md` apontar), checklist do guia (Grep por `Checklist` no guia), `CLAUDE.md`, `AGENTS.md`, `.claude/skills`, `.ai/skills`. Caminho absoluto do `diff.patch`.
 - Para a dimensão Entrega, o `pacote.md` leva também (da sessão principal; o auditor não abre navegador nem roda teste): o **pedido original/issue e o critério de pronto**; se a tarefa é **refatoração sem pedido de mudança**; as **telas tocadas com a evidência de navegador** (perfil usado, antes × depois, ação exercitada); as **integrações externas tocadas com a evidência do teste real**; os **comandos da etapa 2 que rodaram**, por arquivo ou tipo de arquivo, com o resultado de cada um. Registre "não se aplica" (sem tela ou integração tocada, tarefa que não é refatoração) ou "sem evidência" (tocou e não há prova) — o auditor trata só o segundo como achado.
+- Os scanners da etapa 2: caminho do `$D/scanners.md` e dos JSON que existirem (`gitleaks.json`, `trufflehog.json`, `deps-*.json`, `semgrep.json`).
 - Reauditoria (já existe `auditoria/<sha anterior>/` desta branch, `REPROVADO`): acrescente ao pacote os achados anteriores e o `git diff <sha anterior>..HEAD`. O auditor confere as correções e audita só o delta.
 
 Diff grande (mais de ~40 arquivos ou ~3.000 linhas): divida por domínio/pasta em até 4 fatias, um `pacote-<fatia>.md` cada, e um auditor por fatia em paralelo.
@@ -57,6 +73,7 @@ Grave `$D/veredito.md` — **a primeira linha é lida pelo hook**:
 VEREDITO: APROVADO | REPROVADO
 Branch: <branch> · HEAD: <sha completo> · base: <base> @ <merge-base curto> · <data>
 Validação da stack: ok | falhou (<comando>)
+Scanners: gitleaks <n|não rodou> · trufflehog <…> · semgrep <…> · dependências <…|não se aplica>
 Na branch: <n> confirmados (P0 <a> · P1 <b> · P2 <c> · P3 <d>) · refutados <r>
 Exceções decididas pelo dono: <lista ou "nenhuma">
 

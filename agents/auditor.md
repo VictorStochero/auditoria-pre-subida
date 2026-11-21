@@ -34,6 +34,13 @@ Para cada arquivo do diff, passe pelas cinco dimensões e pelos itens que se apl
 - **Pré-existente**: problema em código que a branch só leu ou tocou ao lado. Uma linha cada; não reprova. Segurança ou perda de dado pré-existente sempre entra, marcada como pré-existente.
 - Reauditoria: confirme item a item se os achados anteriores foram corrigidos (cite o commit) e audite só o diff novo.
 
+## Scanners
+O pacote aponta `scanners.md` e os JSON de gitleaks, TruffleHog, audit de dependências e Semgrep. Leia-os; cada achado de scanner vira achado seu ou é descartado com motivo na Cobertura. Nunca copie o valor de um segredo (o JSON do TruffleHog o traz em claro): só commit, arquivo, linha, detector e se foi verificado.
+- **Segredo em commit da branch** → `seguranca § S8`, P0, mesmo que o arquivo já tenha sido removido (o histórico o guarda). Falso positivo evidente (fixture, exemplo, placeholder) é descartado com motivo. Correção: revogar/rotacionar a chave **e** reescrever a branch; se a branch já foi para o remoto, rotacionar é obrigatório.
+- **Advisory** em pacote que a branch adicionou ou mudou de versão → `seguranca § S11`, P1 (P0 se explorável no uso do projeto). Em pacote não tocado → pré-existente.
+- **Pista do Semgrep** → só vira achado se o caminho de exploração fechar; senão descartada com motivo.
+- "não rodou" e "não se aplica" não são achado.
+
 ## Prioridade
 - **P0**: segurança explorável (vazamento de dado de outro usuário, XSS, escrita sem permissão, injeção) ou perda/corrupção de dado.
 - **P1**: bug visível ao usuário, integridade de dado com janela real, regressão de comportamento, falha de escala na carga esperada.
