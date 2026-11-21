@@ -61,7 +61,7 @@ Reprovou: corrija, commite e rode de novo. A reauditoria confere as correções 
 
 Só em repositório ativado (acima). Push da sua branch de trabalho é livre. Bases padrão: `main master homologacao desenvolvimento develop production producao staging` e a `origin/HEAD` do repositório. Para trocar, defina `AUDITORIA_BASES` (separadas por espaço) no `env` do `settings.json`.
 
-Para desligar num projeto, tire o `.auditoria-pre-subida` da branch base, por um commit auditado. Apagá-lo só na branch de trabalho não desliga: o arquivo presente na base do remoto (`origin/<base>`) também ativa o bloqueio. Na máquina inteira, `/plugin disable auditoria-pre-subida@stochero`.
+Para desligar num projeto, tire o `.auditoria-pre-subida` da branch base, por um commit auditado. Apagá-lo só na branch de trabalho não desliga: o arquivo presente numa base de qualquer remoto (`<remoto>/<base>`, como ficou no último `git fetch`) também ativa o bloqueio. Num clone que nunca buscou a base (`--single-branch` de outra branch), essa checagem não tem o que ler até um `git fetch <remoto> <base>`. Na máquina inteira, `/plugin disable auditoria-pre-subida@stochero`.
 
 ## Ferramentas opcionais
 

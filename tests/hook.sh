@@ -140,4 +140,13 @@ confere BLOQ 'gh pr create --fill'
 confere BLOQ 'git push origin feat/desliga:main' "$repo/sub"
 confere BLOQ 'git -C sub push origin feat/desliga:main'
 
+# A base padrão (origin/HEAD) é a do repositório do comando (git -C), não a da pasta da sessão.
+git -C "$repo" push -q origin main:trunk
+git -C "$repo" remote set-head origin trunk
+confere BLOQ "git -C $repo push origin feat/desliga:trunk" "$tmp/fora"
+
+# Remoto com outro nome: o arquivo na base dele também ativa.
+git -C "$repo" remote rename origin upstream
+confere BLOQ 'git push upstream feat/desliga:main'
+
 [ "$falhas" = 0 ] && echo "tudo ok" || { echo "$falhas falha(s)"; exit 1; }

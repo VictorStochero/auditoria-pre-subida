@@ -15,11 +15,13 @@ bloqueia() {
     exit 2
 }
 ativo() { # dir; o arquivo numa base do remoto também ativa: apagá-lo na branch não desliga o bloqueio
-    local raiz b; raiz=$(git -C "$1" rev-parse --show-toplevel 2>/dev/null) || return 1
+    local raiz b r; raiz=$(git -C "$1" rev-parse --show-toplevel 2>/dev/null) || return 1
     [ -f "$raiz/.auditoria-pre-subida" ] && return 0
-    for b in $(bases "$1"); do
-        # ls-tree e não <ref>:<caminho>: o Git Bash converte o "a/b:c" como lista de caminhos do Windows
-        [ -n "$(git -C "$1" ls-tree --full-tree --name-only "refs/remotes/origin/$b" -- .auditoria-pre-subida 2>/dev/null)" ] && return 0
+    for r in $(git -C "$1" remote); do
+        for b in $(bases "$1"); do
+            # ls-tree e não <ref>:<caminho>: o Git Bash converte o "a/b:c" como lista de caminhos do Windows
+            [ -n "$(git -C "$1" ls-tree --full-tree --name-only "refs/remotes/$r/$b" -- .auditoria-pre-subida 2>/dev/null)" ] && return 0
+        done
     done
     return 1
 }
@@ -40,9 +42,9 @@ bases() { # dir
     local padrao; padrao=$(git -C "$1" symbolic-ref -q --short refs/remotes/origin/HEAD 2>/dev/null)
     echo "${AUDITORIA_BASES:-main master homologacao desenvolvimento develop production producao staging} ${padrao#origin/}"
 }
-eh_base() {
+eh_base() { # branch dir
     local b
-    for b in $(bases "$wd"); do [ "$1" = "$b" ] && return 0; done
+    for b in $(bases "$2"); do [ "$1" = "$b" ] && return 0; done
     return 1
 }
 
@@ -68,7 +70,7 @@ confere_push() { # dir args...
         r=${r#+}; src=${r%%:*}; dst=${r#*:}
         dst=${dst#refs/heads/}
         case "$dst" in HEAD|@) dst=$(git -C "$dir" symbolic-ref -q --short HEAD 2>/dev/null) ;; esac
-        eh_base "$dst" || continue
+        eh_base "$dst" "$dir" || continue
         sha=$(git -C "$dir" rev-parse -q --verify "${src:-HEAD}^{commit}" 2>/dev/null) || continue
         aprovado_ou_merge "$dir" "$sha" "refs/remotes/${remoto:-origin}/$dst" || bloqueia "push direto em '$dst' com ${sha:0:9} sem auditoria aprovada."
     done
