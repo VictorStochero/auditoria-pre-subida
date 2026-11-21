@@ -1,6 +1,6 @@
 #!/bin/bash
 # PreToolUse (Bash|PowerShell): abrir PR, mesclar PR e push direto numa branch base só com auditoria APROVADA do commit que sobe.
-# Só age em repositório com o arquivo .auditoria-pre-subida na raiz; os demais projetos da máquina ficam livres.
+# Só age em repositório com o arquivo .auditoria-pre-subida na raiz ou numa base de qualquer remoto; os demais projetos da máquina ficam livres.
 in=$(cat)
 cmd=$(printf '%s' "$in" | grep -oE '"command"[[:space:]]*:[[:space:]]*"([^"\\]|\\.)*"' | head -1 \
     | sed -E 's/^"command"[[:space:]]*:[[:space:]]*"//; s/"$//; s/\\"/"/g; s/\\\\/\\/g')
@@ -14,8 +14,13 @@ bloqueia() {
     echo "Subida bloqueada: $1 Rode a skill /auditoria-pre-subida:auditar neste repositório e suba depois do VEREDITO: APROVADO." >&2
     exit 2
 }
-ativo() { # dir
-    local raiz; raiz=$(git -C "$1" rev-parse --show-toplevel 2>/dev/null) && [ -f "$raiz/.auditoria-pre-subida" ]
+ativo() { # dir; o arquivo numa base do remoto também ativa: apagá-lo na branch não desliga o bloqueio
+    local raiz b r bs; raiz=$(git -C "$1" rev-parse --show-toplevel 2>/dev/null) || return 1
+    [ -f "$raiz/.auditoria-pre-subida" ] && return 0
+    bs=$(bases "$1")
+    # um processo só, e pela entrada: como argumento, o Git Bash converteria "a/b:c" em lista de caminhos do Windows
+    for r in $(git -C "$1" remote); do for b in $bs; do echo "refs/remotes/$r/$b:.auditoria-pre-subida"; done; done \
+        | git -C "$1" cat-file --batch-check 2>/dev/null | grep -q ' blob '
 }
 aprovado() { # dir sha → veredito local em <git-common-dir>/auditoria/<sha>/veredito.md
     local comum
@@ -30,12 +35,13 @@ aprovado_ou_merge() { # dir sha ref-remota; shortcut: merge na base vale pelo se
     p=$(git -C "$1" rev-parse -q --verify "$2^2" 2>/dev/null) && aprovado "$1" "$p" || return 1
     p=$(git -C "$1" rev-parse -q --verify "$2^1" 2>/dev/null) && aprovado_ou_merge "$1" "$p" "$3"
 }
-eh_base() {
-    local b padrao
-    padrao=$(git -C "$wd" symbolic-ref -q --short refs/remotes/origin/HEAD 2>/dev/null); padrao=${padrao#origin/}
-    for b in ${AUDITORIA_BASES:-main master homologacao desenvolvimento develop production producao staging} $padrao; do
-        [ "$1" = "$b" ] && return 0
-    done
+bases() { # dir
+    local padrao; padrao=$(git -C "$1" symbolic-ref -q --short refs/remotes/origin/HEAD 2>/dev/null)
+    echo "${AUDITORIA_BASES:-main master homologacao desenvolvimento develop production producao staging} ${padrao#origin/}"
+}
+eh_base() { # branch dir
+    local b
+    for b in $(bases "$2"); do [ "$1" = "$b" ] && return 0; done
     return 1
 }
 
@@ -61,7 +67,7 @@ confere_push() { # dir args...
         r=${r#+}; src=${r%%:*}; dst=${r#*:}
         dst=${dst#refs/heads/}
         case "$dst" in HEAD|@) dst=$(git -C "$dir" symbolic-ref -q --short HEAD 2>/dev/null) ;; esac
-        eh_base "$dst" || continue
+        eh_base "$dst" "$dir" || continue
         sha=$(git -C "$dir" rev-parse -q --verify "${src:-HEAD}^{commit}" 2>/dev/null) || continue
         aprovado_ou_merge "$dir" "$sha" "refs/remotes/${remoto:-origin}/$dst" || bloqueia "push direto em '$dst' com ${sha:0:9} sem auditoria aprovada."
     done

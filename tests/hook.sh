@@ -126,4 +126,27 @@ git -C "$repo" checkout -q main
 git -C "$repo" -c user.name=t -c user.email=t@t merge -q --no-ff -m octopus feat/x feat/y >/dev/null
 confere BLOQ 'git push origin main'
 
+# Apagar o arquivo na branch não desliga: vale o que está na base do remoto.
+git -C "$repo" reset -q --hard origin/main
+mkdir -p "$repo/sub" && touch "$repo/sub/x"
+git -C "$repo" add .auditoria-pre-subida sub
+git -C "$repo" -c user.name=t -c user.email=t@t commit -q -m ativa
+git -C "$repo" push -q origin main
+git -C "$repo" checkout -q -b feat/desliga
+git -C "$repo" rm -q .auditoria-pre-subida
+git -C "$repo" -c user.name=t -c user.email=t@t commit -q -m desliga
+confere BLOQ 'git push origin feat/desliga:main'
+confere BLOQ 'gh pr create --fill'
+confere BLOQ 'git push origin feat/desliga:main' "$repo/sub"
+confere BLOQ 'git -C sub push origin feat/desliga:main'
+
+# A base padrão (origin/HEAD) é a do repositório do comando (git -C), não a da pasta da sessão.
+git -C "$repo" push -q origin main:trunk
+git -C "$repo" remote set-head origin trunk
+confere BLOQ "git -C $repo push origin feat/desliga:trunk" "$tmp/fora"
+
+# Remoto com outro nome: o arquivo na base dele também ativa.
+git -C "$repo" remote rename origin upstream
+confere BLOQ 'git push upstream feat/desliga:main'
+
 [ "$falhas" = 0 ] && echo "tudo ok" || { echo "$falhas falha(s)"; exit 1; }

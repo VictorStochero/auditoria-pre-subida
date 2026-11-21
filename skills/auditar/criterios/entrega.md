@@ -21,3 +21,13 @@ Toda tela tocada foi validada com **perfil real (nunca administrador)**, compara
 ## E5 — Integração externa testada de verdade
 Mudança em integração externa (e-mail, pagamento, API de terceiro, webhook) só sobe com teste local de **todo o fluxo** com credenciais reais — fora do `.env` versionado; e-mail só para endereços do dono. `Http::fake`/mock não basta: prova o código, não a integração.
 - Como verificar: Grep no diff por client HTTP, Mail/Notification, SDK, webhook e config de serviço; procure no pacote a evidência do teste real (o que foi chamado, resposta obtida). Sem evidência é achado.
+
+## E6 — Mudança nas regras da auditoria
+A branch é auditada pelas regras do **merge-base** (`regras-base/` no pacote), não pelas que ela escreve. O diff que altera as próprias regras é achado, um por mudança, **P2, "Decisão do dono: sim"** ("aceitar a nova regra?"):
+- guia de arquitetura, checklist, mapa de ameaças, `CLAUDE.md`/`AGENTS.md`, skills do projeto (`.claude/skills`, `.ai/skills`);
+- `.claude/settings*.json` e hooks do projeto;
+- `.auditoria-pre-subida`;
+- allowlist de scanner: `.gitleaksignore`, `.gitleaks.toml`, `.semgrepignore`, comentário `nosemgrep` ou `trufflehog:ignore` adicionado.
+
+O código da branch segue auditado pelas regras da base. Aceita pelo dono, a mudança vira exceção registrada no veredito.
+- Como verificar: `git diff --name-only` contra os caminhos acima e Grep no `diff.patch` por `nosemgrep`/`trufflehog:ignore` em linha adicionada; para cada mudança, diga o que ela afrouxa ou cria.

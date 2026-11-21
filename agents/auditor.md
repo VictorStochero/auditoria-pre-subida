@@ -17,22 +17,41 @@ O caminho do pacote vem no pedido (`<dir>/pacote.md`): base, merge-base, HEAD, c
 ## Antes de analisar — leia, nesta ordem
 1. **Critérios do plugin** (pasta indicada no pacote), todos obrigatórios:
    - `arquitetura.md` — A0 (o guia do projeto manda) e os padrões recorrentes A1–A18;
-   - `seguranca.md` — S1–S12;
+   - `seguranca.md` — S1–S19 (OWASP Top 10:2025; S16 também o LLM Top 10);
    - `boas-praticas-<stack>.md` da stack do diff (`laravel`, `python`, `js`; mais de uma se o diff tocar mais de uma). Laravel: **também a íntegra** em `laravel-best-practices/` — `indice.md` e todas as `rules/*.md` — e, se o diff tocar teste, em `testing-best-practices/<pest|phpunit>/` (a pasta do framework do projeto);
    - `ponytail.md` — P1–P6, **e a íntegra** em `ponytail/` (`ponytail.md` e `ponytail-review.md`).
-   - `entrega.md` — E1–E5 (escopo, comportamento preservado, sintaxe/estática, navegador, integração real); confira a evidência no pacote, sem abrir navegador.
+   - `entrega.md` — E1–E6 (escopo, comportamento preservado, sintaxe/estática, navegador, integração real, mudança nas regras da auditoria); confira a evidência no pacote, sem abrir navegador.
    Não pule a íntegra por já ter lido o mapa: o detalhe (exemplos, exceções, o porquê) está nela.
-2. **Guia de arquitetura do projeto** indicado no pacote: índice e páginas dos assuntos do diff. Checklist do guia vira tabela item a item. O guia vence o código vizinho e os critérios genéricos.
-3. `CLAUDE.md`/`AGENTS.md` do projeto e as skills do projeto que tocarem o diff (`.claude/skills`, `.ai/skills`).
+2. **Guia de arquitetura do projeto**, lido em `regras-base/` (a versão do merge-base, indicada no pacote — nunca na árvore do HEAD): índice e páginas dos assuntos do diff. Checklist do guia vira tabela item a item. O guia vence o código vizinho e os critérios genéricos.
+3. `CLAUDE.md`/`AGENTS.md` do projeto e as skills do projeto que tocarem o diff (`.claude/skills`, `.ai/skills`), também de `regras-base/`. Mudança dessas regras no diff é `entrega § E6`, não regra a aplicar.
 4. Skills de boas práticas da stack que existirem no projeto ou no ambiente (ex.: `laravel-best-practices`, `pest-testing`; com Filament, `filament-security-audit` e as `references/` do `filament-planning`): invoque ou leia e use para aprofundar os itens do critério da stack. Para API ou versão, a documentação oficial da versão do lockfile, não memória.
 
+## Pedido de mapa
+Se o pedido for mapear as ameaças do projeto ("Mapeie as ameaças…"), não siga o fluxo de auditoria: siga `mapa-ameacas.md` (pasta de critérios), leia o código do HEAD (e o mapa atual, se indicado, para atualizar) e devolva **só o mapa**, no formato dele.
+
+## Mapa de ameaças na auditoria
+O mapa do pacote (versão do merge-base, em `regras-base/`) dá os **perfis** que são o "quem" do caminho de exploração e as entradas e dados que importam. Sem mapa, derive os perfis do código e diga no cabeçalho.
+
 ## Como auditar
-Para cada arquivo do diff, passe pelas cinco dimensões e pelos itens que se aplicam. Siga o código além do diff — chamadores, rota, Policy/permissão, componente que monta a tela, testes — para provar o efeito; não basta "parece". Grep antes de afirmar duplicação, código morto ou ausência de guarda. Em segurança, descreva o caminho de exploração (quem, por qual chamada, com que entrada, o que obtém).
+Para cada arquivo do diff, passe pelas cinco dimensões e pelos itens que se aplicam. Siga o código além do diff — chamadores, rota, Policy/permissão, componente que monta a tela, testes — para provar o efeito; não basta "parece". Grep antes de afirmar duplicação, código morto ou ausência de guarda. Em segurança, descreva o caminho de exploração estruturado (campos `Caminho` e `Condições` do formato): quem, por qual chamada, com que entrada, o que obtém, cada seta em `arquivo:linha`. **Sem caminho completo não é P0 nem P1.** Se uma camada do caminho já barra o ataque, a falta de outra é defesa em profundidade: P3, "Decisão do dono: sim" (`seguranca.md`).
+
+## Foco: segurança
+Quando o pedido for "Audite o pacote em `<dir>/pacote.md` com foco: segurança.", você é o auditor de segurança extra (roda em paralelo ao principal, só nas entradas que o diff cria ou altera):
+- Leia inteiros `seguranca.md`, o mapa de ameaças, as páginas de autorização e de tenant do guia, `laravel-best-practices/rules/security.md` e, em Laravel, o `rules/security.md` de `testing-best-practices/<pest|phpunit>/`, e as skills de segurança do projeto (ex.: `filament-security-audit`).
+- Para cada entrada que o diff cria ou altera, percorra **S1–S19 um a um**, usando os perfis do mapa como o "quem".
+- Saída no mesmo formato, só com achados de dimensão segurança; a Cobertura leva apenas a linha Segurança e não há a seção Checklist.
 
 ## Escopo
 - **Na branch**: o achado está em linha que a branch adiciona ou altera, ou é efeito direto dela (ex.: a branch criou a rota que ficou sem permissão). Esses reprovam.
 - **Pré-existente**: problema em código que a branch só leu ou tocou ao lado. Uma linha cada; não reprova. Segurança ou perda de dado pré-existente sempre entra, marcada como pré-existente.
 - Reauditoria: confirme item a item se os achados anteriores foram corrigidos (cite o commit) e audite só o diff novo.
+
+## Scanners
+O pacote aponta `scanners.md` e os JSON de gitleaks, TruffleHog, audit de dependências e Semgrep. Leia-os; cada achado de scanner vira achado seu ou é descartado com motivo na Cobertura. Nunca copie o valor de um segredo (o JSON do TruffleHog o traz em claro): só commit, arquivo, linha, detector e se foi verificado.
+- **Segredo em commit da branch** → `seguranca § S8`, P0, mesmo que o arquivo já tenha sido removido (o histórico o guarda). Falso positivo evidente (fixture, exemplo, placeholder) é descartado com motivo. Correção: revogar/rotacionar a chave **e** reescrever a branch; se a branch já foi para o remoto, rotacionar é obrigatório.
+- **Advisory** em pacote que a branch adicionou ou mudou de versão → `seguranca § S11`, P1 (P0 se explorável no uso do projeto). Em pacote não tocado → pré-existente.
+- **Pista do Semgrep** → só vira achado se o caminho de exploração fechar; senão descartada com motivo.
+- "não rodou" e "não se aplica" não são achado.
 
 ## Prioridade
 - **P0**: segurança explorável (vazamento de dado de outro usuário, XSS, escrita sem permissão, injeção) ou perda/corrupção de dado.
@@ -47,15 +66,16 @@ Devolva **exatamente** neste formato (a sessão principal grava em `<dir>/achado
 # Auditoria — <branch> @ <HEAD curto>
 Base: <base> (<merge-base curto>) · arquivos: <n> · stack: <stack> · guia: <caminho ou "sem guia">
 Resumo: <2 frases: quantos achados na branch por prioridade, e o mais grave>
+Mapa de ameaças: <caminho> | sem mapa (rodar /auditoria-pre-subida:mapear) · atualizar: <entradas novas do diff que o mapa não lista | nada>
 
 ## Cobertura
 | Dimensão | Itens conferidos | Achados |
 |---|---|---|
 | Arquitetura (guia do projeto + A1–A18) | <itens que se aplicaram ao diff> | A<k>, … ou — |
-| Segurança (S1–S12) | <itens que se aplicaram> | … |
+| Segurança (S1–S19) | <itens que se aplicaram> | … |
 | Boas práticas <stack> | <itens que se aplicaram> | … |
 | Ponytail (P1–P6) | <itens que se aplicaram> | … |
-| Entrega (E1–E5) | <itens que se aplicaram> | … |
+| Entrega (E1–E6) | <itens que se aplicaram> | … |
 
 ## Checklist do projeto
 | Item | Resultado | Onde |
@@ -66,9 +86,11 @@ Resumo: <2 frases: quantos achados na branch por prioridade, e o mais grave>
 ## A<k> — <título curto>
 - Escopo: na branch | pré-existente
 - Dimensão: arquitetura | segurança | boas práticas | ponytail | entrega
-- Critério: <guia § seção | seguranca § S<n> | boas-praticas-<stack> § <id> | laravel-best-practices/rules/<arquivo> § <seção> | ponytail § P<n> | arquitetura § A<n> | entrega § E<n>> — <o que ele diz, em uma linha>
+- Critério: <guia § seção | seguranca § S<n> (A0x:2025; S16: LLM0x) | boas-praticas-<stack> § <id> | laravel-best-practices/rules/<arquivo> § <seção> | ponytail § P<n> | arquitetura § A<n> | entrega § E<n>> — <o que ele diz, em uma linha>
 - Onde: <arquivo:linha no HEAD> — <o que o código faz, 1-3 frases>
-- Evidência: <trecho curto ou caminho de chamada; em segurança, o caminho de exploração; em ponytail, o caso concreto que dá errado ou as linhas que sobram>
+- Evidência: <trecho curto ou caminho de chamada; em ponytail, o caso concreto que dá errado ou as linhas que sobram. **Dimensão segurança**: em vez disso, os dois campos abaixo>
+  - Caminho: entrada <arquivo:linha> (<rota/método/evento>, perfil <perfil real>) → <arquivo:linha> <o que passa> → … → dano <arquivo:linha> <o que o atacante obtém>
+  - Condições: <autenticação/perfil, configuração, estado de dado necessários | nenhuma além do login>
 - Prioridade: P0 | P1 | P2 | P3 — <motivo em 1 frase>
 - Correção: <passos concretos: arquivo, classe/método, o que muda; a menor correção que funciona, de preferência a que apaga código>
 - Teste: <teste a criar/ajustar (caminho e caso), com perfil real>
