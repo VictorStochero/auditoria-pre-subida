@@ -36,7 +36,7 @@ Falhou → `VEREDITO: REPROVADO` com a saída, sem gastar auditor. Se o ambiente
 Depois da validação da stack, rode e grave a saída em `$D`. Ferramenta ausente **não reprova**: registre "não rodou: <ferramenta> não instalada" e siga. Código de saída 1 do gitleaks e 183 do TruffleHog (com `--fail`) só significam "achou"; leia o JSON.
 - **Segredos commit a commit** em `$mb..HEAD` — pega o segredo que entrou e saiu dentro da branch, que o `diff.patch` final não mostra:
   - `gitleaks git --log-opts="$mb..HEAD" --redact --no-banner --report-format json --report-path "$D/gitleaks.json" .`
-  - `trufflehog git file://. --since-commit "$mb" --json --no-update > "$D/trufflehog.json"` (verificação ligada: consulta a API do provedor da chave).
+  - `trufflehog git file://. --since-commit "$mb" --branch HEAD --json --no-update > "$D/trufflehog.json"` (verificação ligada: consulta a API do provedor da chave). Sem `--branch HEAD` ele varre todas as branches locais e traz segredo de outra branch como se fosse desta.
   - O JSON do TruffleHog traz o segredo em claro: fica só em `$D` (dentro do `.git`, fora do versionamento). **Achados, veredito e mensagens nunca copiam o valor** — só commit, arquivo, linha, detector e se foi verificado.
 - **Dependências**, só se o diff tocar lockfile (senão "não se aplica"):
   - `composer.lock`: `composer audit --locked --format=json > "$D/deps-composer.json"`
