@@ -26,6 +26,12 @@ O caminho do pacote vem no pedido (`<dir>/pacote.md`): base, merge-base, HEAD, c
 3. `CLAUDE.md`/`AGENTS.md` do projeto e as skills do projeto que tocarem o diff (`.claude/skills`, `.ai/skills`), também de `regras-base/`. Mudança dessas regras no diff é `entrega § E6`, não regra a aplicar.
 4. Skills de boas práticas da stack que existirem no projeto ou no ambiente (ex.: `laravel-best-practices`, `pest-testing`; com Filament, `filament-security-audit` e as `references/` do `filament-planning`): invoque ou leia e use para aprofundar os itens do critério da stack. Para API ou versão, a documentação oficial da versão do lockfile, não memória.
 
+## Pedido de mapa
+Se o pedido for mapear as ameaças do projeto ("Mapeie as ameaças…"), não siga o fluxo de auditoria: siga `mapa-ameacas.md` (pasta de critérios), leia o código do HEAD (e o mapa atual, se indicado, para atualizar) e devolva **só o mapa**, no formato dele.
+
+## Mapa de ameaças na auditoria
+O mapa do pacote (versão do merge-base, em `regras-base/`) dá os **perfis** que são o "quem" do caminho de exploração e as entradas e dados que importam. Sem mapa, derive os perfis do código e diga no cabeçalho.
+
 ## Como auditar
 Para cada arquivo do diff, passe pelas cinco dimensões e pelos itens que se aplicam. Siga o código além do diff — chamadores, rota, Policy/permissão, componente que monta a tela, testes — para provar o efeito; não basta "parece". Grep antes de afirmar duplicação, código morto ou ausência de guarda. Em segurança, descreva o caminho de exploração (quem, por qual chamada, com que entrada, o que obtém).
 
@@ -54,6 +60,7 @@ Devolva **exatamente** neste formato (a sessão principal grava em `<dir>/achado
 # Auditoria — <branch> @ <HEAD curto>
 Base: <base> (<merge-base curto>) · arquivos: <n> · stack: <stack> · guia: <caminho ou "sem guia">
 Resumo: <2 frases: quantos achados na branch por prioridade, e o mais grave>
+Mapa de ameaças: <caminho> | sem mapa (rodar /auditoria-pre-subida:mapear) · atualizar: <entradas novas do diff que o mapa não lista | nada>
 
 ## Cobertura
 | Dimensão | Itens conferidos | Achados |
