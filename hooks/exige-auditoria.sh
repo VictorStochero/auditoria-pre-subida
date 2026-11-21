@@ -14,8 +14,14 @@ bloqueia() {
     echo "Subida bloqueada: $1 Rode a skill /auditoria-pre-subida:auditar neste repositório e suba depois do VEREDITO: APROVADO." >&2
     exit 2
 }
-ativo() { # dir
-    local raiz; raiz=$(git -C "$1" rev-parse --show-toplevel 2>/dev/null) && [ -f "$raiz/.auditoria-pre-subida" ]
+ativo() { # dir; o arquivo numa base do remoto também ativa: apagá-lo na branch não desliga o bloqueio
+    local raiz b; raiz=$(git -C "$1" rev-parse --show-toplevel 2>/dev/null) || return 1
+    [ -f "$raiz/.auditoria-pre-subida" ] && return 0
+    for b in $(bases "$1"); do
+        # ls-tree e não <ref>:<caminho>: o Git Bash converte o "a/b:c" como lista de caminhos do Windows
+        [ -n "$(git -C "$1" ls-tree --name-only "refs/remotes/origin/$b" -- .auditoria-pre-subida 2>/dev/null)" ] && return 0
+    done
+    return 1
 }
 aprovado() { # dir sha → veredito local em <git-common-dir>/auditoria/<sha>/veredito.md
     local comum
@@ -30,12 +36,13 @@ aprovado_ou_merge() { # dir sha ref-remota; shortcut: merge na base vale pelo se
     p=$(git -C "$1" rev-parse -q --verify "$2^2" 2>/dev/null) && aprovado "$1" "$p" || return 1
     p=$(git -C "$1" rev-parse -q --verify "$2^1" 2>/dev/null) && aprovado_ou_merge "$1" "$p" "$3"
 }
+bases() { # dir
+    local padrao; padrao=$(git -C "$1" symbolic-ref -q --short refs/remotes/origin/HEAD 2>/dev/null)
+    echo "${AUDITORIA_BASES:-main master homologacao desenvolvimento develop production producao staging} ${padrao#origin/}"
+}
 eh_base() {
-    local b padrao
-    padrao=$(git -C "$wd" symbolic-ref -q --short refs/remotes/origin/HEAD 2>/dev/null); padrao=${padrao#origin/}
-    for b in ${AUDITORIA_BASES:-main master homologacao desenvolvimento develop production producao staging} $padrao; do
-        [ "$1" = "$b" ] && return 0
-    done
+    local b
+    for b in $(bases "$wd"); do [ "$1" = "$b" ] && return 0; done
     return 1
 }
 
