@@ -1,6 +1,6 @@
 #!/bin/bash
 # PreToolUse (Bash|PowerShell): abrir PR, mesclar PR e push direto numa branch base só com auditoria APROVADA do commit que sobe.
-# Só age em repositório com o arquivo .auditoria-pre-subida na raiz; os demais projetos da máquina ficam livres.
+# Só age em repositório com o arquivo .auditoria-pre-subida na raiz ou numa base de qualquer remoto; os demais projetos da máquina ficam livres.
 in=$(cat)
 cmd=$(printf '%s' "$in" | grep -oE '"command"[[:space:]]*:[[:space:]]*"([^"\\]|\\.)*"' | head -1 \
     | sed -E 's/^"command"[[:space:]]*:[[:space:]]*"//; s/"$//; s/\\"/"/g; s/\\\\/\\/g')
