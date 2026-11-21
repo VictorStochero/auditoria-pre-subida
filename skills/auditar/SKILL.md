@@ -10,7 +10,7 @@ Cinco dimensões, com critérios numerados em `criterios/` (ao lado deste arquiv
 | Dimensão | Arquivo | O que cobre |
 |---|---|---|
 | Arquitetura | `arquitetura.md` | o guia do projeto manda (e o checklist dele, item a item); sem guia, os padrões recorrentes A1–A18 |
-| Segurança | `seguranca.md` | S1–S16: autorização no servidor, IDOR, listas/exports, injeção, XSS, atribuição em massa, upload, segredos, sessão/CSRF, SSRF, dependências, integridade, lógica de negócio, enumeração, uso posterior/lote/restauração, LLM/MCP |
+| Segurança | `seguranca.md` | S1–S19 (OWASP Top 10:2025 e LLM Top 10): autorização no servidor, IDOR, listas/exports, injeção, XSS, atribuição em massa, upload, segredos, sessão/CSRF, SSRF, dependências, integridade, lógica de negócio, enumeração, uso posterior/lote/restauração, LLM/MCP, criptografia, log de segurança, falha aberta |
 | Boas práticas | `boas-praticas-<stack>.md` + `laravel-best-practices/` + `testing-best-practices/` | Laravel (L1–L12 + a íntegra do `laravel-best-practices` e do `testing-best-practices` do Boost v2.10.3, variante Pest ou PHPUnit), Python (Y1–Y8), JS/TS (J1–J8), somadas à skill da stack do projeto, se houver |
 | Ponytail | `ponytail.md` + `ponytail/` | P1–P6 + a íntegra do `ponytail` e do `ponytail-review`: correto, seguro, aguenta carga, testado, rápido, enxuto |
 | Entrega | `entrega.md` | E1–E6: escopo (diff ligado ao pedido), comportamento preservado em refatoração, sintaxe/estática não coberta, evidência de navegador, integração externa testada de verdade, mudança nas regras da auditoria |
