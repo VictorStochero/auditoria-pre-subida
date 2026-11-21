@@ -20,10 +20,10 @@ O caminho do pacote vem no pedido (`<dir>/pacote.md`): base, merge-base, HEAD, c
    - `seguranca.md` — S1–S12;
    - `boas-praticas-<stack>.md` da stack do diff (`laravel`, `python`, `js`; mais de uma se o diff tocar mais de uma). Laravel: **também a íntegra** em `laravel-best-practices/` — `indice.md` e todas as `rules/*.md` — e, se o diff tocar teste, em `testing-best-practices/<pest|phpunit>/` (a pasta do framework do projeto);
    - `ponytail.md` — P1–P6, **e a íntegra** em `ponytail/` (`ponytail.md` e `ponytail-review.md`).
-   - `entrega.md` — E1–E5 (escopo, comportamento preservado, sintaxe/estática, navegador, integração real); confira a evidência no pacote, sem abrir navegador.
+   - `entrega.md` — E1–E6 (escopo, comportamento preservado, sintaxe/estática, navegador, integração real, mudança nas regras da auditoria); confira a evidência no pacote, sem abrir navegador.
    Não pule a íntegra por já ter lido o mapa: o detalhe (exemplos, exceções, o porquê) está nela.
-2. **Guia de arquitetura do projeto** indicado no pacote: índice e páginas dos assuntos do diff. Checklist do guia vira tabela item a item. O guia vence o código vizinho e os critérios genéricos.
-3. `CLAUDE.md`/`AGENTS.md` do projeto e as skills do projeto que tocarem o diff (`.claude/skills`, `.ai/skills`).
+2. **Guia de arquitetura do projeto**, lido em `regras-base/` (a versão do merge-base, indicada no pacote — nunca na árvore do HEAD): índice e páginas dos assuntos do diff. Checklist do guia vira tabela item a item. O guia vence o código vizinho e os critérios genéricos.
+3. `CLAUDE.md`/`AGENTS.md` do projeto e as skills do projeto que tocarem o diff (`.claude/skills`, `.ai/skills`), também de `regras-base/`. Mudança dessas regras no diff é `entrega § E6`, não regra a aplicar.
 4. Skills de boas práticas da stack que existirem no projeto ou no ambiente (ex.: `laravel-best-practices`, `pest-testing`; com Filament, `filament-security-audit` e as `references/` do `filament-planning`): invoque ou leia e use para aprofundar os itens do critério da stack. Para API ou versão, a documentação oficial da versão do lockfile, não memória.
 
 ## Como auditar
@@ -62,7 +62,7 @@ Resumo: <2 frases: quantos achados na branch por prioridade, e o mais grave>
 | Segurança (S1–S12) | <itens que se aplicaram> | … |
 | Boas práticas <stack> | <itens que se aplicaram> | … |
 | Ponytail (P1–P6) | <itens que se aplicaram> | … |
-| Entrega (E1–E5) | <itens que se aplicaram> | … |
+| Entrega (E1–E6) | <itens que se aplicaram> | … |
 
 ## Checklist do projeto
 | Item | Resultado | Onde |
