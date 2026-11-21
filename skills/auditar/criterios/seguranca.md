@@ -1,6 +1,9 @@
 # Critérios — Segurança
 
-Vale para toda stack. Projeto com Filament e a skill `filament-security-audit` instalada (`.ai/skills/` ou `.claude/skills/`): leia-a inteira e aplique ao diff, somada a estes itens. Cada achado cita o item (`seguranca § S3`) e traz o **caminho concreto de exploração**: quem (perfil real, nunca administrador), por qual chamada (rota, método público, endpoint, evento), com que entrada, e o que obtém. Sem caminho que feche, não é P0. Os sinais por stack são onde procurar, não a lista inteira.
+Vale para toda stack. Projeto com Filament e a skill `filament-security-audit` instalada (`.ai/skills/` ou `.claude/skills/`): leia-a inteira e aplique ao diff, somada a estes itens. Cada achado cita o item (`seguranca § S3`) e traz o **caminho concreto de exploração**: quem (perfil real, nunca administrador), por qual chamada (rota, método público, endpoint, evento), com que entrada, e o que obtém. Sem caminho que feche, não é P0 nem P1. Os sinais por stack são onde procurar, não a lista inteira.
+
+- **Pista não é achado**: padrão perigoso (`DB::raw`, `eval`…) ou saída de scanner só vira achado quando o caminho fecha, seta a seta, em `arquivo:linha`.
+- **Defesa em profundidade**: se uma camada do caminho já barra o ataque (middleware, Policy, escopo global, validação, Form Request), a falta de outra camada é reforço — **P3 com "Decisão do dono: sim"**, citando a camada que barra; nunca P0–P2.
 
 ## S1 — Autorização no servidor em toda entrada que grava ou lê dado restrito
 Toda rota, controller, endpoint de API, método público de componente, ação de formulário/tabela e job disparado pelo usuário pergunta à regra de permissão do projeto (Policy, Gate, permission class, middleware) **no servidor**. Esconder botão, desabilitar campo ou filtrar menu não protege.
@@ -52,3 +55,29 @@ Dependência nova sem necessidade (ver `ponytail § P6`) ou com vulnerabilidade 
 
 ## S12 — Integridade de dado
 Escrita de dado de negócio sem transação; corrida de "checa e grava" (dois requests ao mesmo tempo); exclusão em cascata que apaga dado de outro dono; migration que destrói dado sem cópia; erro engolido (`catch` vazio) que esconde falha de gravação.
+
+## S13 — Lógica de negócio e estado
+- Pular, repetir ou voltar etapa de fluxo: aprovar o já aprovado, pagar duas vezes, replay de callback ou de link de uso único.
+- Transição de estado sem conferir o estado atual (`update` por id sem `where status = …`; ação de tela que o servidor aceita em qualquer estado).
+- Valor negativo, zero ou no limite em quantidade, preço, desconto, parcela; coerção de tipo (`"0"`, `[]`, `null`, `==` frouxo, string numérica em comparação).
+- Fronteira de expiração e fuso: `<` × `<=`, data local × UTC, trial/convite/token que vence à meia-noite.
+- Postura insegura quando configuração ou feature flag falta: `config('x')` nulo que libera, `env` ausente que desliga a checagem.
+
+## S14 — Enumeração e oráculos
+- Mensagem, tempo ou tamanho de resposta que revela existência: login, reset de senha, convite, cadastro ("e-mail já cadastrado", 404 × 403, caminho que consulta o banco só quando o usuário existe).
+- Busca, filtro ou ordenação sobre campo que o perfil não vê (ordenar por salário e deduzir o valor; filtro por coluna restrita).
+- Id sequencial exposto onde a contagem ou a adivinhação importa (pedidos, clientes, faturas).
+
+## S15 — Uso posterior, lote e restauração
+- Dado salvo com segurança e usado depois cru em outro contexto: nome que vira caminho de arquivo, campo que vira SQL, HTML, comando ou cabeçalho em job, export, e-mail ou PDF.
+- Restaurar, desfazer exclusão (`restore`, lixeira), importar ou duplicar sem reaplicar dono, tenant e permissão atuais; registro restaurado volta para o tenant errado.
+- Lote, import e export sem permissão por item: a ação em massa checa uma vez e age em ids vindos do cliente.
+- Caminho alternativo para a mesma mudança de estado com permissão mais fraca (API × tela, ação em massa × individual, comando × rota).
+- Sinais — Laravel: `withTrashed()->find($id)->restore()`, `Model::replicate()`, `Excel::import`, `whereIn('id', $request->ids)` sem escopo; Python: `bulk_update(...)` e `loaddata` com id do cliente; JS: `updateMany({ id: { $in: ids } })`.
+
+## S16 — Superfícies de LLM e MCP
+- Ferramenta MCP ou tool de LLM que lê ou grava dado sem a mesma autorização da tela (por usuário **e** por tenant); a ferramenta roda com credencial de serviço e ignora quem pergunta.
+- Texto de terceiros (formulário público, e-mail, documento, página web) que chega ao modelo como instrução e aciona ferramenta que grava ou envia para fora (injeção de prompt indireta).
+- Saída do modelo usada crua em HTML, SQL, comando, caminho ou URL (trate-a como entrada do cliente: S4, S5, S10).
+- Segredo ou dado de outro tenant no contexto do modelo (prompt de sistema, RAG sem filtro de tenant, histórico compartilhado).
+- Sem limite de custo ou de chamadas por usuário (laço de ferramentas, contexto sem teto, rate limit ausente).

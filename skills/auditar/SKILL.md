@@ -10,7 +10,7 @@ Cinco dimensões, com critérios numerados em `criterios/` (ao lado deste arquiv
 | Dimensão | Arquivo | O que cobre |
 |---|---|---|
 | Arquitetura | `arquitetura.md` | o guia do projeto manda (e o checklist dele, item a item); sem guia, os padrões recorrentes A1–A18 |
-| Segurança | `seguranca.md` | S1–S12: autorização no servidor, IDOR, listas/exports, injeção, XSS, atribuição em massa, upload, segredos, sessão/CSRF, SSRF, dependências, integridade |
+| Segurança | `seguranca.md` | S1–S16: autorização no servidor, IDOR, listas/exports, injeção, XSS, atribuição em massa, upload, segredos, sessão/CSRF, SSRF, dependências, integridade, lógica de negócio, enumeração, uso posterior/lote/restauração, LLM/MCP |
 | Boas práticas | `boas-praticas-<stack>.md` + `laravel-best-practices/` + `testing-best-practices/` | Laravel (L1–L12 + a íntegra do `laravel-best-practices` e do `testing-best-practices` do Boost v2.10.3, variante Pest ou PHPUnit), Python (Y1–Y8), JS/TS (J1–J8), somadas à skill da stack do projeto, se houver |
 | Ponytail | `ponytail.md` + `ponytail/` | P1–P6 + a íntegra do `ponytail` e do `ponytail-review`: correto, seguro, aguenta carga, testado, rápido, enxuto |
 | Entrega | `entrega.md` | E1–E6: escopo (diff ligado ao pedido), comportamento preservado em refatoração, sintaxe/estática não coberta, evidência de navegador, integração externa testada de verdade, mudança nas regras da auditoria |
@@ -61,13 +61,21 @@ Diff grande (mais de ~40 arquivos ou ~3.000 linhas): divida por domínio/pasta e
 
 ## 4. Auditor
 Despache o subagente `auditoria-pre-subida:auditor` (Opus, só leitura) com o pedido: "Audite o pacote em `<D>/pacote.md`." Grave a resposta em `$D/achados.md` (fatias: concatene).
-Se o ambiente impuser outro despachante para revisão (ex.: worker do Orca), use-o com o mesmo agente (`claude --agent auditoria-pre-subida:auditor`) e o mesmo pedido.
+Se o ambiente impuser outro despachante para revisão (ex.: worker do Orca), use-o com o mesmo agente (`claude --agent auditoria-pre-subida:auditor`) e o mesmo pedido; vale também para o auditor de segurança abaixo e para o verificador.
+
+**Auditor de segurança extra (condicional).** A sessão decide pelo diff, sem agente. Há gatilho se:
+- `git diff --name-only $mb..HEAD` tem caminho que contém `route|controller|polic|permission|middleware|auth|livewire|filament|api|upload|webhook|mcp` (sem diferenciar maiúsculas: `grep -Ei`), ou
+- `git diff $mb..HEAD -G '<regex>' --name-only` lista algo, com `<regex>` = `DB::raw|whereRaw|selectRaw|orderByRaw|havingRaw|cursor\.execute|\.raw\(|shell_exec|proc_open|subprocess|child_process|eval\(|unserialize|pickle\.loads|yaml\.load|\{!!|v-html|dangerouslySetInnerHTML|mark_safe|innerHTML|Storage::|UploadedFile|withoutMiddleware|Gate::|authorize` (regex estendida do git).
+
+Com gatilho, despache **em paralelo** ao auditor principal uma segunda instância de `auditoria-pre-subida:auditor` com "Audite o pacote em `<D>/pacote.md` com foco: segurança." e grave a resposta em `$D/achados-seguranca.md`. Junte as duas listas em `achados.md`: mesmo Onde + mesmo critério = um achado só (fica o de caminho completo), numeração A<k> contínua. Com fatias, um auditor de segurança por fatia que tenha gatilho.
 
 ## 5. Contraprova
-Com ao menos um achado "na branch", despache `auditoria-pre-subida:verificador` com "Contraprove `<D>/achados.md` com o pacote `<D>/pacote.md`." Grave em `$D/verificacao.md`. Achado REFUTADO sai; prioridade revista vale a do verificador. Divergência que você não consegue decidir lendo o código: leve ao usuário.
+Com ao menos um achado "na branch", despache `auditoria-pre-subida:verificador` com "Contraprove `<D>/achados.md` com o pacote `<D>/pacote.md`." Grave em `$D/verificacao.md`. Achado REFUTADO sai; prioridade revista vale a do verificador. **INCONCLUSIVO** (o caminho fecha no código, mas depende de fato fora dele) segue para a etapa 6. Divergência que você não consegue decidir lendo o código: leve ao usuário.
 
 ## 6. Decisões do dono
 Achado com "Decisão do dono: sim" (inclusive `entrega § E6`: "aceitar a nova regra?") vai ao usuário como pergunta interativa (AskUserQuestion, até 4 por vez), com o contexto para decidir sem abrir o código e a opção recomendada pelo guia. Resposta que mantém o código como está (exceção aceita) tira o achado do gate e fica registrada no veredito; resposta que manda corrigir mantém o achado.
+
+Achado **INCONCLUSIVO** vai na mesma rodada de perguntas, com o fato e como conferir (o `Fato a conferir` do verificador): "o fato se confirma" mantém o achado; "não se confirma" tira.
 
 ## 7. Veredito
 Grave `$D/veredito.md` — **a primeira linha é lida pelo hook**:
@@ -76,7 +84,7 @@ VEREDITO: APROVADO | REPROVADO
 Branch: <branch> · HEAD: <sha completo> · base: <base> @ <merge-base curto> · <data>
 Validação da stack: ok | falhou (<comando>)
 Scanners: gitleaks <n|não rodou> · trufflehog <…> · semgrep <…> · dependências <…|não se aplica>
-Na branch: <n> confirmados (P0 <a> · P1 <b> · P2 <c> · P3 <d>) · refutados <r>
+Na branch: <n> confirmados (P0 <a> · P1 <b> · P2 <c> · P3 <d>) · refutados <r> · inconclusivos <i>
 Exceções decididas pelo dono: <lista ou "nenhuma">
 
 <os achados confirmados, no formato do auditor, com a prioridade final>
