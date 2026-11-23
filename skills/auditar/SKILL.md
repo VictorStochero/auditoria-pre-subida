@@ -30,6 +30,7 @@ Rode nos arquivos tocados (`git diff --name-only $mb..HEAD`) o que o projeto tiv
 - PHP/Laravel: `vendor/bin/pint --test <arquivos>`, `php -l`, PHPStan/Larastan se houver `phpstan.neon*`, testes dos arquivos tocados (`php artisan test --compact <arquivos de teste>`), `php artisan route:list --except-vendor` se tocou rotas.
 - Python: `ruff check`/`ruff format --check`, `mypy`/`pyright` se configurado, `pytest` dos testes tocados.
 - JS/TS: `eslint`/`biome`, `prettier --check`, `tsc --noEmit`, testes tocados (`vitest`/`jest`).
+- Máquina com fila de testes (`~/.agents/bin/agent-pool`): todo teste acima vai por ela, `~/.agents/bin/agent-pool test -- <comando>`; direto, o hook da fila nega a chamada.
 Falhou → `VEREDITO: REPROVADO` com a saída, sem gastar auditor. Se o ambiente tiver fila ou wrapper de testes próprio, use-o.
 
 ### Scanners

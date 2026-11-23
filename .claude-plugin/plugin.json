@@ -1,6 +1,6 @@
 {
   "name": "auditoria-pre-subida",
-  "version": "1.4.0",
+  "version": "1.4.1",
   "description": "Auditoria obrigatória antes de subir (pt-BR): o diff da branch é auditado em arquitetura (guia do projeto), segurança, boas práticas da stack, ponytail (correto, testado, enxuto) e entrega (escopo, comportamento, navegador, integração real), com critérios embutidos, scanners de segredos (gitleaks, TruffleHog), dependências e Semgrep, mapa de ameaças por projeto e contraprova adversarial; um hook bloqueia PR, merge e push na base sem veredito aprovado do commit. Qualquer projeto (Laravel, Python, JS/TS), só Claude Code.",
   "author": {
     "name": "Victor Stochero",
